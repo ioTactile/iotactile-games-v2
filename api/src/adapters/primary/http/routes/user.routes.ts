@@ -22,7 +22,9 @@ export async function registerUserRoutes(server: FastifyInstance) {
       if (!user) {
         return reply.status(404).send({ error: 'Utilisateur non trouvé.' });
       }
-      return reply.status(200).send({ ...user, password: undefined });
+      const { password, ...safeUser } = user;
+      void password;
+      return reply.status(200).send(safeUser);
     },
   );
 }

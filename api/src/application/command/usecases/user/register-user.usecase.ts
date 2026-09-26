@@ -47,6 +47,8 @@ export class RegisterUserUsecase {
     const created = await this.userRepository.create(userToCreate);
     if (!created.ok) return created;
 
-    return Result.ok({ ...created.value, password: undefined });
+    const { password, ...safeUser } = created.value;
+    void password;
+    return Result.ok(safeUser);
   }
 }
