@@ -177,12 +177,10 @@ export class MineSweeper implements IMineSweeper {
     col: number,
     isFirstClick?: boolean,
   ): void {
-    if (cell.getIsMine() && isFirstClick) {
-      cell.setIsFlagged(true);
-      this.numFlags++;
-      return;
-    }
-    if (!cell.getIsMine() && isFirstClick) {
+    if (isFirstClick) {
+      if (cell.getIsMine()) {
+        this.relocateMine(row, col);
+      }
       this.isFirstClick = false;
     }
 
@@ -201,6 +199,24 @@ export class MineSweeper implements IMineSweeper {
           this.handleClickAction(adjacentCell, adjRow, adjCol);
         }
       });
+    }
+  }
+
+  /** Déplace la mine hors de la case cliquée (premier clic toujours sûr). */
+  private relocateMine(fromRow: number, fromCol: number): void {
+    this.board[fromRow][fromCol].setIsMine(false);
+
+    for (let row = 0; row < this.numRows; row++) {
+      for (let col = 0; col < this.numCols; col++) {
+        if (
+          (row !== fromRow || col !== fromCol) &&
+          !this.board[row][col].getIsMine()
+        ) {
+          this.board[row][col].setIsMine(true);
+          this.generateNumAdjacentMines();
+          return;
+        }
+      }
     }
   }
 

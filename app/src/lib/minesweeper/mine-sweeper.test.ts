@@ -56,8 +56,32 @@ describe("MineSweeper", () => {
     mineSweeper.setup(options);
     mineSweeper.handleCellAction(0, 0, "click");
     expect(mineSweeper.getBoard()[0][0].getIsRevealed()).toBe(true);
+    expect(mineSweeper.getBoard()[0][0].getIsMine()).toBe(false);
     expect(mineSweeper.getNumRevealed()).toBeGreaterThan(0);
     expect(mineSweeper.getGameStatus()).not.toBe("waiting");
+  });
+
+  test("should relocate mine on first click when cell is a mine", () => {
+    mineSweeper.setup(options);
+    const board = mineSweeper.getBoard();
+
+    if (!board[0][0].getIsMine()) {
+      outer: for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 5; col++) {
+          if (board[row][col].getIsMine()) {
+            board[row][col].setIsMine(false);
+            board[0][0].setIsMine(true);
+            break outer;
+          }
+        }
+      }
+    }
+
+    mineSweeper.handleCellAction(0, 0, "click");
+
+    expect(board[0][0].getIsRevealed()).toBe(true);
+    expect(board[0][0].getIsMine()).toBe(false);
+    expect(mineSweeper.getGameStatus()).toBe("inProgress");
   });
 
   test("should handle cell action (flag)", () => {
