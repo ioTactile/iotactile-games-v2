@@ -1,31 +1,25 @@
-import type { DiceState } from "@/components/dice/DiceRow";
-import type { Player } from "@/components/dice/PlayerBar";
-import type { ScoreKey } from "@/lib/dice/dice-scores";
-import type {
-  DiceFaceDto,
-  DicePlayerScoresDto,
-  DiceSessionViewDto,
-} from "@/types/dice";
+import type { DiceState } from '@/components/dice/DiceRow';
+import type { Player } from '@/components/dice/PlayerBar';
+import type { ScoreKey } from '@/lib/dice/dice-scores';
+import type { DiceFaceDto, DicePlayerScoresDto, DiceSessionViewDto } from '@/types/dice';
 
 const SCORE_KEYS: ScoreKey[] = [
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "threeOfAKind",
-  "fourOfAKind",
-  "fullHouse",
-  "smallStraight",
-  "largeStraight",
-  "dice",
-  "chance",
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'threeOfAKind',
+  'fourOfAKind',
+  'fullHouse',
+  'smallStraight',
+  'largeStraight',
+  'dice',
+  'chance',
 ];
 
-function mapScoresDtoToPartial(
-  dto: DicePlayerScoresDto,
-): Partial<Record<ScoreKey, number | null>> {
+function mapScoresDtoToPartial(dto: DicePlayerScoresDto): Partial<Record<ScoreKey, number | null>> {
   const out: Partial<Record<ScoreKey, number | null>> = {};
   for (const k of SCORE_KEYS) {
     const v = dto[k as keyof DicePlayerScoresDto];
@@ -42,9 +36,9 @@ export function viewToPlayers(view: DiceSessionViewDto): Player[] {
 
 export function viewToCurrentPlayerId(view: DiceSessionViewDto): string {
   const state = view.state;
-  if (!state) return view.players[0]?.id ?? "";
+  if (!state) return view.players[0]?.id ?? '';
   const p = view.players.find((pl) => pl.slot === state.currentPlayerSlot);
-  return p?.id ?? "";
+  return p?.id ?? '';
 }
 
 export function viewToDices(view: DiceSessionViewDto): DiceState[] {
@@ -75,7 +69,5 @@ export function viewToTriesLeft(view: DiceSessionViewDto): number {
 }
 
 export function isGameOver(view: DiceSessionViewDto): boolean {
-  return (
-    view.session.status === "FINISHED" || (view.state?.remainingTurns ?? 0) <= 0
-  );
+  return view.session.status === 'FINISHED' || (view.state?.remainingTurns ?? 0) <= 0;
 }

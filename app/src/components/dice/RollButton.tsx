@@ -1,16 +1,13 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useCallback, useState } from "react";
+import Image from 'next/image';
+import { useCallback, useState } from 'react';
 
-import { DICE_ASSETS } from "@/constants/assets.constant";
-import {
-  ANIMATION_DURATION_MS,
-  SOUND_LEAD_MS,
-} from "@/constants/dice.constant";
-import { useDiceSounds } from "@/hooks/use-dice-sounds";
-import { useI18n } from "@/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
+import { DICE_ASSETS } from '@/constants/assets.constant';
+import { ANIMATION_DURATION_MS, SOUND_LEAD_MS } from '@/constants/dice.constant';
+import { useDiceSounds } from '@/hooks/use-dice-sounds';
+import { useI18n } from '@/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
 type RollButtonProps = {
   onRoll: () => void;
@@ -43,24 +40,16 @@ export function RollButton({
       setShaking(false);
       stopShakeAndRoll();
     }, SOUND_LEAD_MS + ANIMATION_DURATION_MS);
-  }, [
-    disabled,
-    shaking,
-    rolling,
-    triesLeft,
-    onRoll,
-    playShakeAndRoll,
-    stopShakeAndRoll,
-  ]);
+  }, [disabled, shaking, rolling, triesLeft, onRoll, playShakeAndRoll, stopShakeAndRoll]);
 
   return (
     <button
       type="button"
       onClick={handleClick}
       disabled={disabled || shaking || rolling || triesLeft <= 0}
-      aria-label={t("dice.rollDiceButtonLabel", triesLeft)}
+      aria-label={t('dice.rollDiceButtonLabel', triesLeft)}
       className={cn(
-        "relative flex h-14 w-20 ml-auto sm:ml-0 shrink-0 tems-center justify-center rounded-sm bg-dice-main-tertiary text-dice-tertiary-foreground shadow-lg transition-opacity hover:opacity-95 disabled:opacity-50 sm:h-16 sm:w-24",
+        'relative flex h-14 w-20 ml-auto sm:ml-0 shrink-0 tems-center justify-center rounded-sm bg-dice-main-tertiary text-dice-tertiary-foreground shadow-lg transition-opacity hover:opacity-95 disabled:opacity-50 sm:h-16 sm:w-24',
         className,
       )}
     >

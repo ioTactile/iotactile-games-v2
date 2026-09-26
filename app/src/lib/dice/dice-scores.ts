@@ -1,36 +1,36 @@
 /**
- * Calcul des scores par ligne (Dice) côté client.
+ * Per-row Dice score calculation on the client.
  */
 
 export type ScoreKey =
-  | "one"
-  | "two"
-  | "three"
-  | "four"
-  | "five"
-  | "six"
-  | "threeOfAKind"
-  | "fourOfAKind"
-  | "fullHouse"
-  | "smallStraight"
-  | "largeStraight"
-  | "dice"
-  | "chance";
+  | 'one'
+  | 'two'
+  | 'three'
+  | 'four'
+  | 'five'
+  | 'six'
+  | 'threeOfAKind'
+  | 'fourOfAKind'
+  | 'fullHouse'
+  | 'smallStraight'
+  | 'largeStraight'
+  | 'dice'
+  | 'chance';
 
 export const SCORE_KEYS: ScoreKey[] = [
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "threeOfAKind",
-  "fourOfAKind",
-  "fullHouse",
-  "smallStraight",
-  "largeStraight",
-  "dice",
-  "chance",
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'threeOfAKind',
+  'fourOfAKind',
+  'fullHouse',
+  'smallStraight',
+  'largeStraight',
+  'dice',
+  'chance',
 ];
 
 export interface DiceFaceInput {
@@ -48,43 +48,35 @@ function countFaces(dices: DiceFaceInput[]): Record<number, number> {
 export function computeScore(key: ScoreKey, dices: DiceFaceInput[]): number {
   if (!dices || dices.length !== 5) return 0;
   switch (key) {
-    case "one":
+    case 'one':
       return dices.filter((d) => d.face === 1).length * 1;
-    case "two":
+    case 'two':
       return dices.filter((d) => d.face === 2).length * 2;
-    case "three":
+    case 'three':
       return dices.filter((d) => d.face === 3).length * 3;
-    case "four":
+    case 'four':
       return dices.filter((d) => d.face === 4).length * 4;
-    case "five":
+    case 'five':
       return dices.filter((d) => d.face === 5).length * 5;
-    case "six":
+    case 'six':
       return dices.filter((d) => d.face === 6).length * 6;
-    case "threeOfAKind": {
+    case 'threeOfAKind': {
       const c = countFaces(dices);
-      return Object.values(c).some((n) => n >= 3)
-        ? dices.reduce((s, d) => s + d.face, 0)
-        : 0;
+      return Object.values(c).some((n) => n >= 3) ? dices.reduce((s, d) => s + d.face, 0) : 0;
     }
-    case "fourOfAKind": {
+    case 'fourOfAKind': {
       const c = countFaces(dices);
-      return Object.values(c).some((n) => n >= 4)
-        ? dices.reduce((s, d) => s + d.face, 0)
-        : 0;
+      return Object.values(c).some((n) => n >= 4) ? dices.reduce((s, d) => s + d.face, 0) : 0;
     }
-    case "fullHouse": {
+    case 'fullHouse': {
       const sorted = [...dices].sort((a, b) => a.face - b.face);
       const full =
-        (sorted[0].face === sorted[2].face &&
-          sorted[3].face === sorted[4].face) ||
-        (sorted[0].face === sorted[1].face &&
-          sorted[2].face === sorted[4].face);
-      const allSame = sorted.every(
-        (d, i) => i === 0 || d.face === sorted[i - 1].face,
-      );
+        (sorted[0].face === sorted[2].face && sorted[3].face === sorted[4].face) ||
+        (sorted[0].face === sorted[1].face && sorted[2].face === sorted[4].face);
+      const allSame = sorted.every((d, i) => i === 0 || d.face === sorted[i - 1].face);
       return full && !allSame ? 25 : 0;
     }
-    case "smallStraight": {
+    case 'smallStraight': {
       const faces = new Set(dices.map((d) => d.face));
       const ok =
         (faces.has(1) && faces.has(2) && faces.has(3) && faces.has(4)) ||
@@ -92,7 +84,7 @@ export function computeScore(key: ScoreKey, dices: DiceFaceInput[]): number {
         (faces.has(3) && faces.has(4) && faces.has(5) && faces.has(6));
       return ok ? 30 : 0;
     }
-    case "largeStraight": {
+    case 'largeStraight': {
       const sorted = [...dices].sort((a, b) => a.face - b.face);
       const ok =
         (sorted[0].face === 1 &&
@@ -103,31 +95,27 @@ export function computeScore(key: ScoreKey, dices: DiceFaceInput[]): number {
           new Set(sorted.map((d) => d.face)).size === 5);
       return ok ? 40 : 0;
     }
-    case "dice": {
+    case 'dice': {
       const first = dices[0].face;
       return dices.every((d) => d.face === first) ? 50 : 0;
     }
-    case "chance":
+    case 'chance':
       return dices.reduce((s, d) => s + d.face, 0);
     default:
       return 0;
   }
 }
 
-const UPPER_KEYS: ScoreKey[] = ["one", "two", "three", "four", "five", "six"];
+const UPPER_KEYS: ScoreKey[] = ['one', 'two', 'three', 'four', 'five', 'six'];
 const BONUS_THRESHOLD = 63;
 const BONUS_POINTS = 35;
 
-export function computeBonus(
-  scores: Partial<Record<ScoreKey, number | null>>,
-): number {
+export function computeBonus(scores: Partial<Record<ScoreKey, number | null>>): number {
   const upper = UPPER_KEYS.reduce((s, k) => s + (scores[k] ?? 0), 0);
   return upper >= BONUS_THRESHOLD ? BONUS_POINTS : 0;
 }
 
-export function computeTotal(
-  scores: Partial<Record<ScoreKey, number | null>>,
-): number {
+export function computeTotal(scores: Partial<Record<ScoreKey, number | null>>): number {
   const upper = UPPER_KEYS.reduce((s, k) => s + (scores[k] ?? 0), 0);
   const bonus = upper >= BONUS_THRESHOLD ? BONUS_POINTS : 0;
   const lower = SCORE_KEYS.filter((k) => !UPPER_KEYS.includes(k)).reduce(
@@ -138,17 +126,17 @@ export function computeTotal(
 }
 
 export const SCORE_LABELS: Record<ScoreKey, string> = {
-  one: "1",
-  two: "2",
-  three: "3",
-  four: "4",
-  five: "5",
-  six: "6",
-  threeOfAKind: "Brelan",
-  fourOfAKind: "Carré",
-  fullHouse: "Full",
-  smallStraight: "Petite suite",
-  largeStraight: "Grande suite",
-  dice: "Dice",
-  chance: "Chance",
+  one: '1',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  six: '6',
+  threeOfAKind: 'Brelan',
+  fourOfAKind: 'Carré',
+  fullHouse: 'Full',
+  smallStraight: 'Petite suite',
+  largeStraight: 'Grande suite',
+  dice: 'Dice',
+  chance: 'Chance',
 };

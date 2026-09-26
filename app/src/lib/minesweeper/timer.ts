@@ -37,8 +37,7 @@ export class Timer {
   }
 
   private tick(): void {
-    this.elapsedTime =
-      this.startTime !== undefined ? Date.now() - this.startTime : 0;
+    this.elapsedTime = this.startTime !== undefined ? Date.now() - this.startTime : 0;
   }
 
   public isStarted(): boolean {

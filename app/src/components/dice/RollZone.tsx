@@ -1,21 +1,18 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
 
-import { DICE_ASSETS } from "@/constants/assets.constant";
-import { DICE_FACE_IMAGES_WHITE } from "@/constants/assets.constant";
-import {
-  ANIMATION_DURATION_MS,
-  SOUND_LEAD_MS,
-} from "@/constants/dice.constant";
-import { useDiceSounds } from "@/hooks/use-dice-sounds";
-import { useI18n } from "@/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
+import { DICE_ASSETS } from '@/constants/assets.constant';
+import { DICE_FACE_IMAGES_WHITE } from '@/constants/assets.constant';
+import { ANIMATION_DURATION_MS, SOUND_LEAD_MS } from '@/constants/dice.constant';
+import { useDiceSounds } from '@/hooks/use-dice-sounds';
+import { useI18n } from '@/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
-import type { DiceState } from "./DiceRow";
+import type { DiceState } from './DiceRow';
 
-/** Positions en % pour que les 5 dés restent dans le cadre sur mobile (marges ~20% pour éviter tout débordement). */
+/** Positions in % so all 5 dice stay inside the frame on mobile (~20% margins to avoid overflow). */
 const SCATTER_POSITIONS = [
   { left: 22, top: 32 },
   { left: 50, top: 28 },
@@ -73,10 +70,7 @@ export function RollZone({
 
   useEffect(() => {
     if (!rolling) return;
-    const t = setTimeout(
-      stopShakeAndRoll,
-      ANIMATION_DURATION_MS + SOUND_LEAD_MS,
-    );
+    const t = setTimeout(stopShakeAndRoll, ANIMATION_DURATION_MS + SOUND_LEAD_MS);
     return () => clearTimeout(t);
   }, [rolling, stopShakeAndRoll]);
 
@@ -86,11 +80,9 @@ export function RollZone({
     setTimeout(() => onRoll?.(), SOUND_LEAD_MS);
   }, [canRoll, onRoll, playShakeAndRoll]);
 
-  // Toujours un div pour éviter button > button (dés invérrouillables), invalide en HTML.
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: div requis pour contenir les boutons de dés sans imbrication button>button invalide
     <div
-      role={canRoll ? "button" : undefined}
+      role={canRoll ? 'button' : undefined}
       tabIndex={canRoll ? 0 : undefined}
       onClick={
         canRoll
@@ -104,7 +96,7 @@ export function RollZone({
         canRoll
           ? (e) => {
               if (e.target !== e.currentTarget) return;
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleZoneClick();
               }
@@ -112,17 +104,17 @@ export function RollZone({
           : undefined
       }
       className={cn(
-        "relative flex min-h-[200px] flex-1 items-center justify-center overflow-hidden rounded-md bg-dice-main-primary/60 min-w-0",
+        'relative flex min-h-[200px] flex-1 items-center justify-center overflow-hidden rounded-md bg-dice-main-primary/60 min-w-0',
         canRoll &&
-          "cursor-pointer border-0 p-0 font-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          'cursor-pointer border-0 p-0 font-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className,
       )}
     >
       {rolling && (
         <div
           className={cn(
-            "absolute inset-0 flex items-center justify-center transition-opacity",
-            rolling && "animate-dice-shake",
+            'absolute inset-0 flex items-center justify-center transition-opacity',
+            rolling && 'animate-dice-shake',
           )}
         >
           <Image
@@ -150,7 +142,7 @@ export function RollZone({
                     onToggleLock?.(i);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
+                    if (e.key === 'Enter' || e.key === ' ') {
                       if (disabled) return;
                       e.preventDefault();
                       playRollDice();
@@ -164,7 +156,7 @@ export function RollZone({
                     top: `${positions[i]?.top ?? 50}%`,
                     transform: `translate(-50%, -50%) rotate(${positions[i]?.rotate ?? 0}deg)`,
                   }}
-                  aria-label={t("dice.selectDiceLabel", d.face)}
+                  aria-label={t('dice.selectDiceLabel', d.face)}
                 >
                   <Image
                     src={DICE_FACE_IMAGES_WHITE[Math.max(0, d.face - 1)]}

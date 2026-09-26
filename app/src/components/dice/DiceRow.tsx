@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useDiceSounds } from "@/hooks/use-dice-sounds";
+import { useDiceSounds } from '@/hooks/use-dice-sounds';
 
-import { DiceFace } from "./DiceFace";
+import { DiceFace } from './DiceFace';
 
 export type DiceState = {
   id: number;

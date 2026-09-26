@@ -1,29 +1,25 @@
-"use client";
+'use client';
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { DiceSlots } from "@/components/dice/DiceSlots";
-import { PlayerBar } from "@/components/dice/PlayerBar";
-import { RollButton } from "@/components/dice/RollButton";
-import { RollZone } from "@/components/dice/RollZone";
-import { ScoreGrid } from "@/components/dice/ScoreGrid";
-import { SoundToggle } from "@/components/dice/SoundToggle";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { ANIMATION_DURATION_MS } from "@/constants/dice.constant";
-import { useAuth } from "@/hooks/use-auth";
-import { useDiceSounds } from "@/hooks/use-dice-sounds";
-import { useDiceWs } from "@/hooks/use-dice-ws";
-import { useI18n } from "@/i18n/I18nProvider";
-import { getOrCreateGuestId } from "@/lib/auth/guest-id";
-import {
-  getDiceSession,
-  leaveDiceSession,
-  startDiceSession,
-} from "@/lib/dice/dice-api";
-import type { ScoreKey } from "@/lib/dice/dice-scores";
+import { DiceSlots } from '@/components/dice/DiceSlots';
+import { PlayerBar } from '@/components/dice/PlayerBar';
+import { RollButton } from '@/components/dice/RollButton';
+import { RollZone } from '@/components/dice/RollZone';
+import { ScoreGrid } from '@/components/dice/ScoreGrid';
+import { SoundToggle } from '@/components/dice/SoundToggle';
+import { LanguageSwitcher } from '@/components/i18n/language-switcher';
+import { ANIMATION_DURATION_MS } from '@/constants/dice.constant';
+import { useAuth } from '@/hooks/use-auth';
+import { useDiceSounds } from '@/hooks/use-dice-sounds';
+import { useDiceWs } from '@/hooks/use-dice-ws';
+import { useI18n } from '@/i18n/I18nProvider';
+import { getOrCreateGuestId } from '@/lib/auth/guest-id';
+import { getDiceSession, leaveDiceSession, startDiceSession } from '@/lib/dice/dice-api';
+import type { ScoreKey } from '@/lib/dice/dice-scores';
 import {
   isGameOver,
   viewToCurrentPlayerId,
@@ -31,22 +27,17 @@ import {
   viewToPlayers,
   viewToScoresByPlayer,
   viewToTriesLeft,
-} from "@/lib/dice/dice-view-mappers";
-import { queryKeys } from "@/lib/query/query-keys";
-import type { DiceSessionViewDto } from "@/types/dice";
+} from '@/lib/dice/dice-view-mappers';
+import { queryKeys } from '@/lib/query/query-keys';
+import type { DiceSessionViewDto } from '@/types/dice';
 
 function isDiceRollUpdate(
   prev: DiceSessionViewDto | null,
   next: DiceSessionViewDto | null,
 ): boolean {
   if (!prev?.state?.dices || !next?.state?.dices) return false;
-  if (prev.state.currentPlayerSlot !== next.state.currentPlayerSlot)
-    return false;
-  if (
-    prev.state.triesLeft !== undefined &&
-    next.state.triesLeft === 3 &&
-    prev.state.triesLeft < 3
-  )
+  if (prev.state.currentPlayerSlot !== next.state.currentPlayerSlot) return false;
+  if (prev.state.triesLeft !== undefined && next.state.triesLeft === 3 && prev.state.triesLeft < 3)
     return false;
   const pa = prev.state.dices;
   const na = next.state.dices;
@@ -74,20 +65,14 @@ function getMyPlayerId(
 ): string | null {
   if (!view) return null;
   const me = view.players.find(
-    (p) =>
-      (userId && p.userId === userId) || (guestId && p.guestId === guestId),
+    (p) => (userId && p.userId === userId) || (guestId && p.guestId === guestId),
   );
   return me?.id ?? null;
 }
 
-function isCreator(
-  view: DiceSessionViewDto | null,
-  myPlayerId: string | null,
-): boolean {
+function isCreator(view: DiceSessionViewDto | null, myPlayerId: string | null): boolean {
   if (!view || !myPlayerId) return false;
-  const first = [...view.players].sort(
-    (a, b) => a.orderIndex - b.orderIndex,
-  )[0];
+  const first = [...view.players].sort((a, b) => a.orderIndex - b.orderIndex)[0];
   return first?.id === myPlayerId;
 }
 
@@ -97,7 +82,7 @@ export default function DiceRoomPage() {
   const queryClient = useQueryClient();
   const sessionId = params.sessionId as string;
   const { accessToken, user } = useAuth();
-  const guestId = typeof window !== "undefined" ? getOrCreateGuestId() : "";
+  const guestId = typeof window !== 'undefined' ? getOrCreateGuestId() : '';
   const { t } = useI18n();
 
   const {
@@ -115,7 +100,7 @@ export default function DiceRoomPage() {
     enabled: Boolean(sessionId),
     refetchInterval: (query) => {
       const status = query.state.data?.session.status;
-      return status === "WAITING" ? 2000 : false;
+      return status === 'WAITING' ? 2000 : false;
     },
   });
 
@@ -126,8 +111,7 @@ export default function DiceRoomPage() {
     enabled:
       Boolean(sessionId) &&
       Boolean(
-        sessionData?.session.status === "PLAYING" ||
-        sessionData?.session.status === "FINISHED",
+        sessionData?.session.status === 'PLAYING' || sessionData?.session.status === 'FINISHED',
       ),
   });
 
@@ -135,8 +119,7 @@ export default function DiceRoomPage() {
     if (viewFromWs.view) return viewFromWs.view;
     if (
       sessionData &&
-      (sessionData.session.status === "PLAYING" ||
-        sessionData.session.status === "FINISHED")
+      (sessionData.session.status === 'PLAYING' || sessionData.session.status === 'FINISHED')
     )
       return sessionData;
     return sessionData ?? null;
@@ -154,9 +137,7 @@ export default function DiceRoomPage() {
   const [codeCopied, setCodeCopied] = useState(false);
   const [rolling, setRolling] = useState(false);
   const [lockedOrder, setLockedOrder] = useState<number[]>([]);
-  const [displayView, setDisplayView] = useState<DiceSessionViewDto | null>(
-    null,
-  );
+  const [displayView, setDisplayView] = useState<DiceSessionViewDto | null>(null);
   const previousViewRef = useRef<DiceSessionViewDto | null>(null);
   const weJustLockedRef = useRef(false);
   const weJustRolledRef = useRef(false);
@@ -201,7 +182,7 @@ export default function DiceRoomPage() {
 
   useEffect(() => {
     if (sessionError) {
-      router.replace("/dice");
+      router.replace('/dice');
     }
   }, [sessionError, router]);
 
@@ -219,12 +200,9 @@ export default function DiceRoomPage() {
         queryKey: queryKeys.dice.session(sessionId),
       });
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.dice.mySessions(
-          guestId || undefined,
-          accessToken ?? null,
-        ),
+        queryKey: queryKeys.dice.mySessions(guestId || undefined, accessToken ?? null),
       });
-      router.replace("/dice");
+      router.replace('/dice');
     }
   }, [sessionId, leaving, accessToken, router, queryClient, guestId]);
 
@@ -267,9 +245,7 @@ export default function DiceRoomPage() {
     (diceIndex: number) => {
       weJustLockedRef.current = true;
       viewFromWs.sendLock(diceIndex);
-      setLockedOrder((prev) =>
-        prev.includes(diceIndex) ? prev : [...prev, diceIndex],
-      );
+      setLockedOrder((prev) => (prev.includes(diceIndex) ? prev : [...prev, diceIndex]));
     },
     [viewFromWs],
   );
@@ -286,13 +262,10 @@ export default function DiceRoomPage() {
   const data = sessionData ?? view ?? null;
   const status = data?.session?.status;
   const gameView = view ?? data;
-  const currentPlayerIdFromView = gameView
-    ? viewToCurrentPlayerId(gameView)
-    : "";
+  const currentPlayerIdFromView = gameView ? viewToCurrentPlayerId(gameView) : '';
   const gameViewForDisplay = displayView ?? gameView;
   const dices = useMemo(() => {
-    if (!gameViewForDisplay || (status !== "PLAYING" && status !== "FINISHED"))
-      return [];
+    if (!gameViewForDisplay || (status !== 'PLAYING' && status !== 'FINISHED')) return [];
     return viewToDices(gameViewForDisplay);
   }, [gameViewForDisplay, status]);
 
@@ -309,14 +282,14 @@ export default function DiceRoomPage() {
   }, [myPlayerId, currentPlayerIdFromView, dices, lockedOrderFiltered]);
 
   if (!sessionId) {
-    router.replace("/dice");
+    router.replace('/dice');
     return null;
   }
 
   if (sessionLoading && !sessionData) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-dice-main-secondary">
-        <p className="text-dice-foreground/80">{t("dice.loadingSession")}</p>
+        <p className="text-dice-foreground/80">{t('dice.loadingSession')}</p>
       </div>
     );
   }
@@ -324,15 +297,15 @@ export default function DiceRoomPage() {
   if (!data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-dice-main-secondary">
-        <p className="text-dice-foreground/80">{t("dice.sessionNotFound")}</p>
+        <p className="text-dice-foreground/80">{t('dice.sessionNotFound')}</p>
         <Link href="/dice" className="text-dice-main-tertiary hover:underline">
-          {t("dice.backToMenu")}
+          {t('dice.backToMenu')}
         </Link>
       </div>
     );
   }
 
-  if (status === "WAITING") {
+  if (status === 'WAITING') {
     const players = viewToPlayers(data);
     return (
       <div className="flex min-h-screen flex-col bg-dice-main-secondary">
@@ -341,7 +314,7 @@ export default function DiceRoomPage() {
             <Link
               href="/dice"
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-dice-main-tertiary text-dice-tertiary-foreground hover:opacity-90"
-              aria-label={t("common.back")}
+              aria-label={t('common.back')}
             >
               <svg
                 className="h-6 w-6"
@@ -358,9 +331,7 @@ export default function DiceRoomPage() {
                 />
               </svg>
             </Link>
-            <h1 className="text-lg font-semibold text-dice-foreground">
-              {data.session.name}
-            </h1>
+            <h1 className="text-lg font-semibold text-dice-foreground">{data.session.name}</h1>
             <div className="flex items-center gap-2">
               <LanguageSwitcher variant="dice" />
               <SoundToggle />
@@ -370,13 +341,11 @@ export default function DiceRoomPage() {
 
         <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
           <p className="text-dice-foreground/90">
-            {t("dice.waitingForPlayersLabel")} ({players.length}/4)
+            {t('dice.waitingForPlayersLabel')} ({players.length}/4)
           </p>
           {data.session.joinCode && (
             <div className="flex flex-col items-center gap-2 rounded-xl bg-dice-main-primary/80 p-4 w-full max-w-xs border border-dice-foreground/20">
-              <p className="text-sm text-dice-foreground/80">
-                {t("dice.shareCodeHelp")}
-              </p>
+              <p className="text-sm text-dice-foreground/80">{t('dice.shareCodeHelp')}</p>
               <div className="flex items-center gap-2 w-full">
                 <code className="flex-1 rounded-lg bg-dice-foreground/10 px-4 py-3 font-mono text-xl tracking-[0.3em] text-center text-dice-foreground">
                   {data.session.joinCode}
@@ -396,7 +365,7 @@ export default function DiceRoomPage() {
                   }}
                   className="shrink-0 rounded-lg bg-dice-main-tertiary px-4 py-3 font-medium text-dice-tertiary-foreground hover:opacity-90 transition-opacity"
                 >
-                  {codeCopied ? t("dice.copied") : t("dice.copy")}
+                  {codeCopied ? t('dice.copied') : t('dice.copy')}
                 </button>
               </div>
             </div>
@@ -412,9 +381,7 @@ export default function DiceRoomPage() {
               </li>
             ))}
           </ul>
-          {startError && (
-            <p className="text-sm text-dice-error">{startError}</p>
-          )}
+          {startError && <p className="text-sm text-dice-error">{startError}</p>}
           <div className="flex flex-wrap gap-3">
             {creator && (
               <button
@@ -423,7 +390,7 @@ export default function DiceRoomPage() {
                 disabled={startLoading || players.length < 1}
                 className="rounded-lg bg-dice-main-tertiary px-4 py-2 font-medium text-dice-tertiary-foreground hover:opacity-90 disabled:opacity-50"
               >
-                {startLoading ? t("dice.startingGame") : t("dice.startGame")}
+                {startLoading ? t('dice.startingGame') : t('dice.startGame')}
               </button>
             )}
             <button
@@ -432,21 +399,18 @@ export default function DiceRoomPage() {
               disabled={leaving}
               className="rounded-lg border border-dice-foreground/30 bg-dice-foreground/10 px-4 py-2 font-medium text-dice-foreground hover:bg-dice-foreground/20 disabled:opacity-50"
             >
-              {leaving ? t("dice.leaving") : t("dice.leave")}
+              {leaving ? t('dice.leaving') : t('dice.leave')}
             </button>
           </div>
-          <Link
-            href="/dice"
-            className="text-sm text-dice-foreground/70 hover:text-dice-foreground"
-          >
-            ← {t("dice.backToMenu")}
+          <Link href="/dice" className="text-sm text-dice-foreground/70 hover:text-dice-foreground">
+            ← {t('dice.backToMenu')}
           </Link>
         </main>
       </div>
     );
   }
 
-  if (status !== "PLAYING" && status !== "FINISHED") {
+  if (status !== 'PLAYING' && status !== 'FINISHED') {
     return null;
   }
   if (!gameView) return null;
@@ -463,11 +427,7 @@ export default function DiceRoomPage() {
   if (gameOver) {
     return (
       <div className="flex min-h-screen flex-col bg-dice-main-secondary">
-        <PlayerBar
-          players={players}
-          currentPlayerId={currentPlayerId}
-          backHref="/dice"
-        />
+        <PlayerBar players={players} currentPlayerId={currentPlayerId} backHref="/dice" />
         <div className="flex flex-col flex-1 sm:flex-none gap-4 p-3 sm:flex-row  sm:p-4">
           <aside className="w-full shrink-0 sm:w-64">
             <ScoreGrid
@@ -481,14 +441,12 @@ export default function DiceRoomPage() {
             />
           </aside>
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
-            <p className="text-center text-dice-foreground/90">
-              {t("dice.gameOverMessage")}
-            </p>
+            <p className="text-center text-dice-foreground/90">{t('dice.gameOverMessage')}</p>
             <Link
               href="/dice"
               className="rounded-sm bg-dice-main-tertiary px-4 py-2 font-medium text-dice-tertiary-foreground hover:opacity-90"
             >
-              {t("dice.backToMenu")}
+              {t('dice.backToMenu')}
             </Link>
           </div>
         </div>
@@ -498,11 +456,7 @@ export default function DiceRoomPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-dice-main-secondary">
-      <PlayerBar
-        players={players}
-        currentPlayerId={currentPlayerId}
-        backHref="/dice"
-      />
+      <PlayerBar players={players} currentPlayerId={currentPlayerId} backHref="/dice" />
 
       <div className="flex flex-1 flex-col gap-4 p-3 sm:flex-row sm:p-4">
         <aside className="w-full shrink-0 sm:w-64">
@@ -545,9 +499,7 @@ export default function DiceRoomPage() {
               rolling={rolling}
             />
           </div>
-          {viewFromWs.error && (
-            <p className="text-sm text-dice-error">{viewFromWs.error}</p>
-          )}
+          {viewFromWs.error && <p className="text-sm text-dice-error">{viewFromWs.error}</p>}
         </div>
       </div>
     </div>

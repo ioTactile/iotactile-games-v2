@@ -1,6 +1,6 @@
 /**
- * Configuration des jeux affichés sur la home.
- * Ajouter un objet ici pour qu'un jeu apparaisse dans la grille.
+ * Games shown on the home screen.
+ * Add an object here for a game to appear in the grid.
  */
 export interface GameEntry {
   id: string;
@@ -11,15 +11,15 @@ export interface GameEntry {
 
 export const games: GameEntry[] = [
   {
-    id: "dice",
-    name: "Dice",
-    href: "/dice",
-    icon: "Dices",
+    id: 'dice',
+    name: 'Dice',
+    href: '/dice',
+    icon: 'Dices',
   },
   {
-    id: "minesweeper",
-    name: "Minesweeper",
-    href: "/minesweeper",
-    icon: "Grid3X3",
+    id: 'minesweeper',
+    name: 'Minesweeper',
+    href: '/minesweeper',
+    icon: 'Grid3X3',
   },
 ];

@@ -19,7 +19,7 @@ L'équipe installe elle-même les packages ; ne pas exécuter `npm install` / `p
 
 - **Fastify** : https://fastify.dev/docs/latest/Guides/
 - **Prisma avec Fastify** : https://www.prisma.io/fastify
-- **Biome** : https://biomejs.dev/ (format + lint utilisés dans l'API)
+- **ESLint** + **Prettier** : https://eslint.org/ / https://prettier.io/ (lint + format utilisés dans l'API)
 - **Next.js** : https://nextjs.org/docs
 
 ---
@@ -43,7 +43,7 @@ L'équipe installe elle-même les packages ; ne pas exécuter `npm install` / `p
 ### Dev & outillage
 
 - **TypeScript** (strict, `verbatimModuleSyntax`, `allowImportingTsExtensions`), **tsx** (dev/run).
-- **Biome** : format + lint (indent tab, double quotes) ; scripts `format`, `lint`, `check`, `check:fix`.
+- **ESLint** + **Prettier** : lint + format (aligné wallet) ; scripts `lint`, `format`, `format:check`, `check`, `check:fix`.
 - **Vitest** : tests unitaires et e2e ; coverage v8, UI disponible.
 - **Pino** + **pino-pretty** : logging Fastify.
 - **Husky** : hooks (pre-commit pour check + tests).
@@ -151,7 +151,7 @@ Exemples de bounded contexts actuels : `user` (authentification, comptes) et `di
 
 ## Rappel packages (à installer par l'équipe)
 
-- **API** (déjà présents) : `fastify`, `@fastify/cookie`, `@fastify/cors`, `@fastify/jwt`, `prisma`, `@prisma/client`, `@prisma/adapter-pg`, `pg`, `dotenv`, `typescript-result`, `bcrypt`, `zod` ; dev : `biome`, `vitest`, `tsx`, `pino`, `pino-pretty`, `husky`, `@types/bcrypt`.
-- **App** (déjà présents) : `next`, `react`, `react-dom`, `tailwindcss`, `@tailwindcss/postcss`, `typescript`, `eslint`, `eslint-config-next`.
+- **API** (déjà présents) : `fastify`, `@fastify/cookie`, `@fastify/cors`, `@fastify/jwt`, `prisma`, `@prisma/client`, `@prisma/adapter-pg`, `pg`, `dotenv`, `typescript-result`, `bcrypt`, `zod` ; dev : `eslint`, `prettier`, `typescript-eslint`, `vitest`, `tsx`, `pino`, `pino-pretty`, `husky`, `@types/bcrypt`.
+- **App** (déjà présents) : `next`, `react`, `react-dom`, `tailwindcss`, `@tailwindcss/postcss`, `typescript`, `eslint`, `eslint-config-next`, `prettier`.
 
 Ce fichier sert de référence pour l'architecture et les choix techniques ; les implémentations doivent rester alignées avec ces principes.

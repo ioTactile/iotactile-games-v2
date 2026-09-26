@@ -1,12 +1,12 @@
-const STORAGE_KEY = "dice_guest_id";
+const STORAGE_KEY = 'dice_guest_id';
 
 /**
- * Retourne un UUID invité persistant (localStorage).
- * Utilisé pour jouer en invité sans compte.
+ * Return a persistent guest UUID (localStorage).
+ * Used to play as a guest without an account.
  */
 export function getOrCreateGuestId(): string {
-  if (typeof window === "undefined") {
-    return "";
+  if (typeof window === 'undefined') {
+    return '';
   }
   let id = localStorage.getItem(STORAGE_KEY);
   if (!id) {

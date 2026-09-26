@@ -1,24 +1,19 @@
-import type {
-  LoginCredentials,
-  LoginResponse,
-  RegisterCredentials,
-  User,
-} from "@/types/auth";
+import type { LoginCredentials, LoginResponse, RegisterCredentials, User } from '@/types/auth';
 
-import { defaultFetchOptions, getApiUrl } from "../api/api-client";
+import { defaultFetchOptions, getApiUrl } from '../api/api-client';
 
 const authBase = () => `${getApiUrl()}/auth`;
 
 /**
- * Connexion : POST /auth/login.
- * Le refresh token est posé en cookie httpOnly par l'API.
+ * Login: POST /auth/login.
+ * Refresh token is set as an httpOnly cookie by the API.
  */
 export async function login(
   credentials: LoginCredentials,
 ): Promise<{ ok: true; data: LoginResponse } | { ok: false; error: string }> {
   const res = await fetch(`${authBase()}/login`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(credentials),
   });
 
@@ -27,7 +22,7 @@ export async function login(
   if (!res.ok) {
     return {
       ok: false,
-      error: data?.error ?? "Erreur lors de la connexion.",
+      error: data?.error ?? 'Erreur lors de la connexion.',
     };
   }
 
@@ -38,15 +33,15 @@ export async function login(
 }
 
 /**
- * Inscription : POST /auth/register.
- * Retourne l'utilisateur créé (sans mot de passe).
+ * Register: POST /auth/register.
+ * Returns the created user (no password).
  */
 export async function register(
   credentials: RegisterCredentials,
 ): Promise<{ ok: true; data: User } | { ok: false; error: string }> {
   const res = await fetch(`${authBase()}/register`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(credentials),
   });
 
@@ -63,24 +58,24 @@ export async function register(
 }
 
 /**
- * Déconnexion : POST /auth/logout (efface le cookie refresh).
+ * Logout: POST /auth/logout (clears the refresh cookie).
  */
 export async function logout(): Promise<void> {
   await fetch(`${authBase()}/logout`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
   });
 }
 
 /**
- * Utilisateur courant : GET /auth/me (requiert Authorization: Bearer accessToken).
+ * Current user: GET /auth/me (requires Authorization: Bearer accessToken).
  */
 export async function getMe(
   accessToken: string,
 ): Promise<{ ok: true; data: User } | { ok: false; error: string }> {
   const res = await fetch(`${authBase()}/me`, {
     ...defaultFetchOptions,
-    method: "GET",
+    method: 'GET',
     headers: {
       ...defaultFetchOptions.headers,
       Authorization: `Bearer ${accessToken}`,
@@ -92,7 +87,7 @@ export async function getMe(
   if (!res.ok) {
     return {
       ok: false,
-      error: data?.error ?? "Non authentifié.",
+      error: data?.error ?? 'Non authentifié.',
     };
   }
 
@@ -100,14 +95,14 @@ export async function getMe(
 }
 
 /**
- * Rafraîchir l'access token via le cookie refresh : POST /auth/refresh.
+ * Refresh the access token via the refresh cookie: POST /auth/refresh.
  */
 export async function refresh(): Promise<
   { ok: true; accessToken: string; expiresInSeconds: number } | { ok: false }
 > {
   const res = await fetch(`${authBase()}/refresh`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
   });
 
   const data = await res.json().catch(() => ({}));

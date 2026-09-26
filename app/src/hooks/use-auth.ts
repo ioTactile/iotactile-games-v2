@@ -4,17 +4,15 @@ import {
   useMe,
   useRegisterMutation,
   useSession,
-} from "@/hooks/use-auth-queries";
+} from '@/hooks/use-auth-queries';
 
 /**
- * Hook pour gérer l'authentification.
- * Tout est dans React Query : session (accessToken via cookie) + me (user).
+ * Hook to manage authentication.
+ * Everything lives in React Query: session (accessToken via cookie) + me (user).
  */
 export function useAuth() {
   const { data: accessToken, isFetched: isInitialized } = useSession();
-  const { data: user, isLoading: userLoading, error: userError } = useMe(
-    accessToken ?? null,
-  );
+  const { data: user, isLoading: userLoading, error: userError } = useMe(accessToken ?? null);
 
   const isAuthenticated = Boolean(accessToken);
 

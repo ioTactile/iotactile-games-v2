@@ -1,4 +1,4 @@
-import type { Language } from "@/i18n/config";
+import type { Language } from '@/i18n/config';
 
 export type Dictionary = {
   common: {

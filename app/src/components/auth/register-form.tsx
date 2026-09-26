@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { PasswordInput } from "@/components/inputs/password-input";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form } from "@/components/zod/zod-form";
-import { ZodFormField } from "@/components/zod/zod-form-field";
-import { useAuth } from "@/hooks/use-auth";
-import { useZodForm } from "@/hooks/use-zod-form";
-import { registerFormSchema, type RegisterFormValues } from "@/lib/auth/auth-schema";
+import { PasswordInput } from '@/components/inputs/password-input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form } from '@/components/zod/zod-form';
+import { ZodFormField } from '@/components/zod/zod-form-field';
+import { useAuth } from '@/hooks/use-auth';
+import { useZodForm } from '@/hooks/use-zod-form';
+import { registerFormSchema, type RegisterFormValues } from '@/lib/auth/auth-schema';
 
 interface RegisterFormProps {
   onSwitchToLogin?: (email?: string) => void;
@@ -16,9 +16,9 @@ interface RegisterFormProps {
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const form = useZodForm(registerFormSchema, {
     defaultValues: {
-      email: "",
-      username: "",
-      password: "",
+      email: '',
+      username: '',
+      password: '',
     },
   });
 
@@ -41,35 +41,21 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       className="flex w-full max-w-sm flex-col gap-4"
     >
       <ZodFormField form={form} name="email" label="Email">
-        {(field) => (
-          <Input
-            placeholder="john@example.com"
-            autoComplete="email"
-            {...field}
-          />
-        )}
+        {(field) => <Input placeholder="john@example.com" autoComplete="email" {...field} />}
       </ZodFormField>
 
       <ZodFormField form={form} name="username" label="Pseudo">
-        {(field) => (
-          <Input placeholder="John" autoComplete="username" {...field} />
-        )}
+        {(field) => <Input placeholder="John" autoComplete="username" {...field} />}
       </ZodFormField>
 
       <ZodFormField form={form} name="password" label="Mot de passe">
-        {(field) => (
-          <PasswordInput
-            placeholder="********"
-            autoComplete="new-password"
-            {...field}
-          />
-        )}
+        {(field) => <PasswordInput placeholder="********" autoComplete="new-password" {...field} />}
       </ZodFormField>
 
       {isError && <p className="text-sm text-destructive">{error.message}</p>}
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Création…" : "Créer mon compte"}
+        {isPending ? 'Création…' : 'Créer mon compte'}
       </Button>
 
       {onSwitchToLogin && (

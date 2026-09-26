@@ -19,7 +19,7 @@ traces
 .DS_Store
 
 *.md
-biome.json
+eslint.config.js
 vitest.config.ts
 docker-compose*.yml
 

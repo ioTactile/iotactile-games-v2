@@ -1,9 +1,4 @@
-import type {
-  ControllerRenderProps,
-  FieldValues,
-  Path,
-  UseFormReturn,
-} from "react-hook-form";
+import type { ControllerRenderProps, FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
 import {
   FormControl,
@@ -12,8 +7,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/form';
+import { cn } from '@/lib/utils';
 
 interface ZodFormFieldProps<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -21,9 +16,7 @@ interface ZodFormFieldProps<T extends FieldValues> {
   label: string;
   description?: string;
   showMessage?: boolean;
-  children: (
-    field: Omit<ControllerRenderProps<T, Path<T>>, "value">,
-  ) => React.ReactNode;
+  children: (field: Omit<ControllerRenderProps<T, Path<T>>, 'value'>) => React.ReactNode;
   className?: string;
 }
 
@@ -41,7 +34,7 @@ export function ZodFormField<T extends FieldValues>({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn("flex min-h-[72px] flex-col", className)}>
+        <FormItem className={cn('flex min-h-[72px] flex-col', className)}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>{children(field)}</FormControl>
           {description && <FormDescription>{description}</FormDescription>}

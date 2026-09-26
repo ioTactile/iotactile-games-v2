@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useDiceSounds } from "@/hooks/use-dice-sounds";
+import { useDiceSounds } from '@/hooks/use-dice-sounds';
 
-import { DiceFace } from "./DiceFace";
-import type { DiceState } from "./DiceRow";
+import { DiceFace } from './DiceFace';
+import type { DiceState } from './DiceRow';
 
-const SLOT_KEYS = ["slot-0", "slot-1", "slot-2", "slot-3", "slot-4"] as const;
+const SLOT_KEYS = ['slot-0', 'slot-1', 'slot-2', 'slot-3', 'slot-4'] as const;
 
 type DiceSlotsProps = {
   dices: DiceState[];
@@ -46,9 +46,7 @@ export function DiceSlots({
               <DiceFace
                 face={d.face}
                 locked
-                onClick={() =>
-                  diceIndex !== undefined && handleClick(slotIndex, diceIndex)
-                }
+                onClick={() => diceIndex !== undefined && handleClick(slotIndex, diceIndex)}
                 disabled={disabled}
                 useWhite={useWhiteTheme}
                 size="md"

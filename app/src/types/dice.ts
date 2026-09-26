@@ -1,15 +1,14 @@
 /**
- * Types Dice alignés avec l'API backend.
+ * Dice types aligned with the backend API.
  */
 
 export const DiceSessionStatus = {
-  WAITING: "WAITING",
-  PLAYING: "PLAYING",
-  FINISHED: "FINISHED",
+  WAITING: 'WAITING',
+  PLAYING: 'PLAYING',
+  FINISHED: 'FINISHED',
 } as const;
 
-export type DiceSessionStatusType =
-  (typeof DiceSessionStatus)[keyof typeof DiceSessionStatus];
+export type DiceSessionStatusType = (typeof DiceSessionStatus)[keyof typeof DiceSessionStatus];
 
 export interface DiceFaceDto {
   face: number;
@@ -88,16 +87,16 @@ export interface DiceSessionViewDto {
 }
 
 export type ScoreKeyDto =
-  | "one"
-  | "two"
-  | "three"
-  | "four"
-  | "five"
-  | "six"
-  | "threeOfAKind"
-  | "fourOfAKind"
-  | "fullHouse"
-  | "smallStraight"
-  | "largeStraight"
-  | "dice"
-  | "chance";
+  | 'one'
+  | 'two'
+  | 'three'
+  | 'four'
+  | 'five'
+  | 'six'
+  | 'threeOfAKind'
+  | 'fourOfAKind'
+  | 'fullHouse'
+  | 'smallStraight'
+  | 'largeStraight'
+  | 'dice'
+  | 'chance';

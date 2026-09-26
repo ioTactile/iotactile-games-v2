@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import type { GameOptions } from "@/lib/minesweeper";
+import { Button } from '@/components/ui/button';
+import type { GameOptions } from '@/lib/minesweeper';
 
 const MIN_ROWS = 5;
 const MAX_ROWS = 50;
@@ -29,11 +29,7 @@ interface CustomGameFormProps {
   };
 }
 
-export function CustomGameForm({
-  onSubmit,
-  onBack,
-  labels = {},
-}: CustomGameFormProps) {
+export function CustomGameForm({ onSubmit, onBack, labels = {} }: CustomGameFormProps) {
   const [numRows, setNumRows] = useState(DEFAULT_ROWS);
   const [numCols, setNumCols] = useState(DEFAULT_COLS);
   const [numMines, setNumMines] = useState(DEFAULT_MINES);
@@ -48,7 +44,7 @@ export function CustomGameForm({
     const c = clamp(numCols, MIN_COLS, MAX_COLS);
     const m = clamp(numMines, 1, maxMines);
     if (m > r * c - 9) {
-      setError("Trop de mines pour cette grille.");
+      setError('Trop de mines pour cette grille.');
       return;
     }
     setNumRows(r);
@@ -58,7 +54,7 @@ export function CustomGameForm({
       numRows: r,
       numCols: c,
       numMines: m,
-      difficulty: "custom",
+      difficulty: 'custom',
     });
   };
 
@@ -72,7 +68,7 @@ export function CustomGameForm({
           htmlFor="minesweeper-width"
           className="text-sm font-medium text-minesweeper-muted-foreground"
         >
-          {labels.width ?? "Largeur"}
+          {labels.width ?? 'Largeur'}
         </label>
         <input
           id="minesweeper-width"
@@ -89,7 +85,7 @@ export function CustomGameForm({
           htmlFor="minesweeper-height"
           className="text-sm font-medium text-minesweeper-muted-foreground"
         >
-          {labels.height ?? "Hauteur"}
+          {labels.height ?? 'Hauteur'}
         </label>
         <input
           id="minesweeper-height"
@@ -106,7 +102,7 @@ export function CustomGameForm({
           htmlFor="minesweeper-mines"
           className="text-sm font-medium text-minesweeper-muted-foreground"
         >
-          {labels.mines ?? "Mines"}
+          {labels.mines ?? 'Mines'}
         </label>
         <input
           id="minesweeper-mines"
@@ -128,10 +124,10 @@ export function CustomGameForm({
       )}
       <div className="flex gap-2">
         <Button type="button" variant="outline" onClick={onBack} className="flex-1">
-          {labels.back ?? "Retour"}
+          {labels.back ?? 'Retour'}
         </Button>
         <Button type="submit" className="flex-1">
-          {labels.submit ?? "Jouer"}
+          {labels.submit ?? 'Jouer'}
         </Button>
       </div>
     </form>

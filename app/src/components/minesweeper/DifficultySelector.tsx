@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import type { Difficulty, GameOptions } from "@/lib/minesweeper";
+import { Button } from '@/components/ui/button';
+import type { Difficulty, GameOptions } from '@/lib/minesweeper';
 
 const DIFFICULTIES: {
   name: string;
@@ -11,41 +11,35 @@ const DIFFICULTIES: {
   difficulty: Difficulty;
 }[] = [
   {
-    name: "Débutant",
+    name: 'Débutant',
     numRows: 9,
     numCols: 9,
     numMines: 10,
-    difficulty: "beginner",
+    difficulty: 'beginner',
   },
   {
-    name: "Intermédiaire",
+    name: 'Intermédiaire',
     numRows: 16,
     numCols: 16,
     numMines: 40,
-    difficulty: "intermediate",
+    difficulty: 'intermediate',
   },
   {
-    name: "Expert",
+    name: 'Expert',
     numRows: 30,
     numCols: 16,
     numMines: 99,
-    difficulty: "expert",
+    difficulty: 'expert',
   },
 ];
 
 interface DifficultySelectorProps {
   onSelect: (options: GameOptions) => void;
   onCustom: () => void;
-  labels?: Partial<
-    Record<"beginner" | "intermediate" | "expert" | "custom", string>
-  >;
+  labels?: Partial<Record<'beginner' | 'intermediate' | 'expert' | 'custom', string>>;
 }
 
-export function DifficultySelector({
-  onSelect,
-  onCustom,
-  labels,
-}: DifficultySelectorProps) {
+export function DifficultySelector({ onSelect, onCustom, labels }: DifficultySelectorProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-6 text-minesweeper-muted-foreground">
       {DIFFICULTIES.map((d) => (
@@ -66,13 +60,8 @@ export function DifficultySelector({
           {labels?.[d.difficulty] ?? d.name}
         </Button>
       ))}
-      <Button
-        variant="minesweeper"
-        size="lg"
-        className="w-full max-w-xs"
-        onClick={onCustom}
-      >
-        {labels?.custom ?? "Personnalisé"}
+      <Button variant="minesweeper" size="lg" className="w-full max-w-xs" onClick={onCustom}>
+        {labels?.custom ?? 'Personnalisé'}
       </Button>
     </div>
   );

@@ -3,9 +3,9 @@ import type {
   DiceSessionViewDto,
   MyDiceSessionItemDto,
   PublicDiceSessionItemDto,
-} from "@/types/dice";
+} from '@/types/dice';
 
-import { defaultFetchOptions, getApiUrl } from "../api/api-client";
+import { defaultFetchOptions, getApiUrl } from '../api/api-client';
 
 const diceBase = () => `${getApiUrl()}/dice`;
 
@@ -47,7 +47,7 @@ export async function createDiceSession(
 
   const res = await fetch(`${diceBase()}/sessions`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(params.accessToken ?? null),
     body: JSON.stringify(body),
   });
@@ -56,7 +56,7 @@ export async function createDiceSession(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Erreur lors de la création.",
+      error: (data?.error as string) ?? 'Erreur lors de la création.',
       details: data?.details as Record<string, unknown> | undefined,
     };
   }
@@ -79,16 +79,14 @@ export interface JoinByCodeParams {
 
 export async function joinDiceSession(
   params: JoinSessionParams,
-): Promise<
-  { ok: true } | { ok: false; error: string; details?: Record<string, unknown> }
-> {
+): Promise<{ ok: true } | { ok: false; error: string; details?: Record<string, unknown> }> {
   const body: { displayName?: string; guestId?: string } = {};
   if (params.displayName?.trim()) body.displayName = params.displayName.trim();
   if (params.guestId) body.guestId = params.guestId;
 
   const res = await fetch(`${diceBase()}/sessions/${params.sessionId}/join`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(params.accessToken ?? null),
     body: JSON.stringify(body),
   });
@@ -97,7 +95,7 @@ export async function joinDiceSession(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Erreur lors de la connexion.",
+      error: (data?.error as string) ?? 'Erreur lors de la connexion.',
       details: data?.details as Record<string, unknown> | undefined,
     };
   }
@@ -107,8 +105,7 @@ export async function joinDiceSession(
 export async function joinDiceSessionByCode(
   params: JoinByCodeParams,
 ): Promise<
-  | { ok: true; sessionId: string }
-  | { ok: false; error: string; details?: Record<string, unknown> }
+  { ok: true; sessionId: string } | { ok: false; error: string; details?: Record<string, unknown> }
 > {
   const body: { joinCode: string; displayName?: string; guestId?: string } = {
     joinCode: params.joinCode.trim().toUpperCase(),
@@ -118,7 +115,7 @@ export async function joinDiceSessionByCode(
 
   const res = await fetch(`${diceBase()}/sessions/join-by-code`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(params.accessToken ?? null),
     body: JSON.stringify(body),
   });
@@ -127,7 +124,7 @@ export async function joinDiceSessionByCode(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Erreur lors de la connexion.",
+      error: (data?.error as string) ?? 'Erreur lors de la connexion.',
       details: data?.details as Record<string, unknown> | undefined,
     };
   }
@@ -135,7 +132,7 @@ export async function joinDiceSessionByCode(
   if (!sessionId) {
     return {
       ok: false,
-      error: "Réponse invalide du serveur.",
+      error: 'Réponse invalide du serveur.',
     };
   }
   return { ok: true, sessionId };
@@ -152,7 +149,7 @@ export async function leaveDiceSession(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const res = await fetch(`${diceBase()}/sessions/${params.sessionId}/leave`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(params.accessToken ?? null),
     body: JSON.stringify(params.guestId ? { guestId: params.guestId } : {}),
   });
@@ -161,7 +158,7 @@ export async function leaveDiceSession(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Erreur lors de la sortie.",
+      error: (data?.error as string) ?? 'Erreur lors de la sortie.',
     };
   }
   return { ok: true };
@@ -178,7 +175,7 @@ export async function startDiceSession(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const res = await fetch(`${diceBase()}/sessions/${params.sessionId}/start`, {
     ...defaultFetchOptions,
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(params.accessToken ?? null),
     body: JSON.stringify(params.guestId ? { guestId: params.guestId } : {}),
   });
@@ -187,7 +184,7 @@ export async function startDiceSession(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Erreur au démarrage de la partie.",
+      error: (data?.error as string) ?? 'Erreur au démarrage de la partie.',
     };
   }
   return { ok: true };
@@ -200,14 +197,12 @@ export interface GetMyDiceSessionsParams {
 
 export async function getMyDiceSessions(
   params: GetMyDiceSessionsParams,
-): Promise<
-  { ok: true; data: MyDiceSessionItemDto[] } | { ok: false; error: string }
-> {
+): Promise<{ ok: true; data: MyDiceSessionItemDto[] } | { ok: false; error: string }> {
   const url = new URL(`${diceBase()}/sessions`);
-  if (params.guestId) url.searchParams.set("guestId", params.guestId);
+  if (params.guestId) url.searchParams.set('guestId', params.guestId);
   const res = await fetch(url.toString(), {
     ...defaultFetchOptions,
-    method: "GET",
+    method: 'GET',
     headers: authHeaders(params.accessToken ?? null),
   });
   const data = await res.json().catch(() => ({}));
@@ -215,7 +210,7 @@ export async function getMyDiceSessions(
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Impossible de charger tes parties.",
+      error: (data?.error as string) ?? 'Impossible de charger tes parties.',
     };
   }
   return {
@@ -229,16 +224,14 @@ export async function getPublicDiceSessions(): Promise<
 > {
   const res = await fetch(`${diceBase()}/sessions/public`, {
     ...defaultFetchOptions,
-    method: "GET",
+    method: 'GET',
   });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     return {
       ok: false,
-      error:
-        (data?.error as string) ??
-        "Impossible de charger les parties publiques.",
+      error: (data?.error as string) ?? 'Impossible de charger les parties publiques.',
     };
   }
   return {
@@ -249,20 +242,17 @@ export async function getPublicDiceSessions(): Promise<
 
 export async function getDiceSession(
   sessionId: string,
-): Promise<
-  | { ok: true; data: DiceSessionViewDto }
-  | { ok: false; error: string; status?: number }
-> {
+): Promise<{ ok: true; data: DiceSessionViewDto } | { ok: false; error: string; status?: number }> {
   const res = await fetch(`${diceBase()}/sessions/${sessionId}`, {
     ...defaultFetchOptions,
-    method: "GET",
+    method: 'GET',
   });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     return {
       ok: false,
-      error: (data?.error as string) ?? "Session introuvable.",
+      error: (data?.error as string) ?? 'Session introuvable.',
       status: res.status,
     };
   }

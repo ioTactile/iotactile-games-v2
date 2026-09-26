@@ -1,6 +1,6 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from '@tanstack/react-query';
 
-/** Options par défaut du QueryClient (cache, retry, stale). */
+/** Default QueryClient options (cache, retry, stale). */
 const defaultOptions = {
   queries: {
     staleTime: 60 * 1000, // 1 min

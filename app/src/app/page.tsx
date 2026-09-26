@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Dices, Gamepad2, Grid3X3, LogIn, type LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import { Dices, Gamepad2, Grid3X3, LogIn, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
-import { UserMenu } from "@/components/auth/user-menu";
-import { AuthModal } from "@/components/home/AuthModal";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
-import { useI18n } from "@/i18n/I18nProvider";
-import { games } from "@/lib/games/games";
+import { UserMenu } from '@/components/auth/user-menu';
+import { AuthModal } from '@/components/home/AuthModal';
+import { LanguageSwitcher } from '@/components/i18n/language-switcher';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { useI18n } from '@/i18n/I18nProvider';
+import { games } from '@/lib/games/games';
 
 const GAME_ICONS: Record<string, LucideIcon> = {
   Dices,
@@ -36,23 +36,17 @@ export default function Home() {
             href="/"
             className="flex items-center gap-2 font-semibold tracking-tight text-foreground"
           >
-            <span className="text-xl">{t("common.appName")}</span>
+            <span className="text-xl">{t('common.appName')}</span>
           </Link>
           <div className="flex items-center gap-3">
             {!isInitialized ? (
-              <span className="text-sm text-muted-foreground">
-                {t("common.loading")}
-              </span>
+              <span className="text-sm text-muted-foreground">{t('common.loading')}</span>
             ) : isAuthenticated ? (
               <UserMenu />
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAuthModalOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setAuthModalOpen(true)}>
                 <LogIn className="size-4" />
-                {t("auth.login")}
+                {t('auth.login')}
               </Button>
             )}
             <LanguageSwitcher />
@@ -63,11 +57,9 @@ export default function Home() {
       <main className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
         <section className="mb-14 text-center">
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t("home.title")}
+            {t('home.title')}
           </h1>
-          <p className="text-lg text-muted-foreground">
-            {t("home.subtitle")}
-          </p>
+          <p className="text-lg text-muted-foreground">{t('home.subtitle')}</p>
         </section>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -80,14 +72,12 @@ export default function Home() {
               <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-colors group-hover:bg-primary/25">
                 <GameCardIcon icon={game.icon} />
               </div>
-              <h2 className="mb-2 text-xl font-semibold text-foreground">
-                {game.name}
-              </h2>
+              <h2 className="mb-2 text-xl font-semibold text-foreground">{game.name}</h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {t(`games.${game.id}.description`)}
               </p>
               <span className="mt-4 inline-block text-sm font-medium text-foreground underline-offset-4 group-hover:underline">
-                {t("home.playCta")}
+                {t('home.playCta')}
               </span>
             </Link>
           ))}

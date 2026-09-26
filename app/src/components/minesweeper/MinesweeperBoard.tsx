@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type { Cell } from "@/lib/minesweeper";
-import type { IMineSweeper } from "@/lib/minesweeper";
-import { cn } from "@/lib/utils";
+import type { Cell } from '@/lib/minesweeper';
+import type { IMineSweeper } from '@/lib/minesweeper';
+import { cn } from '@/lib/utils';
 
-import { getCellDisplayType, getCellImageSrc } from "./cell-type";
+import { getCellDisplayType, getCellImageSrc } from './cell-type';
 
 const ZOOM_LEVELS = [16, 20, 24, 28, 32, 36, 40] as const;
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number];
@@ -14,8 +14,8 @@ export const DEFAULT_ZOOM: ZoomLevel = 28;
 interface MinesweeperBoardProps {
   game: IMineSweeper;
   zoomLevel: number;
-  mobileAction: "click" | "flag";
-  onCellAction: (row: number, col: number, action: "click" | "flag") => void;
+  mobileAction: 'click' | 'flag';
+  onCellAction: (row: number, col: number, action: 'click' | 'flag') => void;
   onZoomChange?: (level: number) => void;
 }
 
@@ -34,12 +34,12 @@ export function MinesweeperBoard({
   const numNotDetectedMines = game.getNumMines() - game.getNumFlags();
 
   const handleLeftClick = (row: number, col: number) => {
-    onCellAction(row, col, mobileAction === "flag" ? "flag" : "click");
+    onCellAction(row, col, mobileAction === 'flag' ? 'flag' : 'click');
   };
 
   const handleRightClick = (e: React.MouseEvent, row: number, col: number) => {
     e.preventDefault();
-    onCellAction(row, col, "flag");
+    onCellAction(row, col, 'flag');
   };
 
   return (
@@ -71,7 +71,7 @@ export function MinesweeperBoard({
         className="inline-flex flex-col border border-minesweeper-main-secondary bg-minesweeper-main-secondary/70 p-1 shadow-md"
         style={{
           // Grille : lignes x colonnes
-          display: "grid",
+          display: 'grid',
           gridTemplateColumns: `repeat(${numCols}, ${zoomLevel}px)`,
           gridTemplateRows: `repeat(${numRows}, ${zoomLevel}px)`,
         }}
@@ -93,8 +93,8 @@ export function MinesweeperBoard({
                 key={cellKey(rowIndex, colIndex)}
                 type="button"
                 className={cn(
-                  "cursor-pointer border-0 bg-cover bg-center bg-no-repeat p-0 transition-opacity hover:opacity-90",
-                  "focus-visible:outline-2 focus-visible:outline-ring",
+                  'cursor-pointer border-0 bg-cover bg-center bg-no-repeat p-0 transition-opacity hover:opacity-90',
+                  'focus-visible:outline-2 focus-visible:outline-ring',
                 )}
                 style={{
                   width: zoomLevel,
@@ -124,5 +124,5 @@ function formatElapsed(ms: number): string {
   const minutes = Math.floor(ms / 60_000);
   const seconds = Math.floor((ms % 60_000) / 1000);
   const cs = Math.floor((ms % 1000) / 10);
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
 }

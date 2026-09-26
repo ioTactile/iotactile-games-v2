@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import * as authApi from "@/lib/auth/auth-api";
-import { queryKeys } from "@/lib/query/query-keys";
-import type { User } from "@/types/auth";
+import * as authApi from '@/lib/auth/auth-api';
+import { queryKeys } from '@/lib/query/query-keys';
+import type { User } from '@/types/auth';
 
 /**
- * Session : appelle POST /auth/refresh (cookie) et met en cache l'accessToken.
- * Une seule source de vérité pour "ai-je un token ?" — remplace le store.
+ * Session: calls POST /auth/refresh (cookie) and caches the accessToken.
+ * Single source of truth for "do I have a token?" — replaces the store.
  */
 export function useSession() {
   return useQuery({
@@ -23,9 +23,9 @@ export function useSession() {
 }
 
 /**
- * Récupère l'utilisateur courant (GET /auth/me) avec cache TanStack Query.
- * Le token est lu depuis le cache session dans la queryFn — clé stable sans accessToken.
- * Passer l'accessToken (useSession().data) pour enabled.
+ * Fetches the current user (GET /auth/me) with TanStack Query cache.
+ * Token is read from the session cache inside queryFn — stable key without accessToken.
+ * Pass accessToken (useSession().data) for enabled.
  */
 export function useMe(accessToken: string | null) {
   const queryClient = useQueryClient();
@@ -33,10 +33,8 @@ export function useMe(accessToken: string | null) {
   return useQuery({
     queryKey: queryKeys.auth.me(),
     queryFn: async (): Promise<User> => {
-      const token = queryClient.getQueryData<string | null>(
-        queryKeys.auth.session(),
-      );
-      if (!token) throw new Error("No token");
+      const token = queryClient.getQueryData<string | null>(queryKeys.auth.session());
+      if (!token) throw new Error('No token');
       const result = await authApi.getMe(token);
       if (!result.ok) throw new Error(result.error);
       return result.data;
@@ -46,15 +44,14 @@ export function useMe(accessToken: string | null) {
 }
 
 /**
- * Mutation de connexion (POST /auth/login).
- * En cas de succès : met à jour le cache session + me (plus de store).
+ * Login mutation (POST /auth/login).
+ * On success: updates session + me cache (no store).
  */
 export function useLoginMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (credentials: { email: string; password: string }) =>
-      authApi.login(credentials),
+    mutationFn: (credentials: { email: string; password: string }) => authApi.login(credentials),
     onSuccess: async (result) => {
       if (!result.ok) return;
       const { accessToken } = result.data;
@@ -69,8 +66,8 @@ export function useLoginMutation() {
 }
 
 /**
- * Mutation d'inscription (POST /auth/register).
- * En cas de succès, invalide le cache auth (optionnel, pour cohérence).
+ * Register mutation (POST /auth/register).
+ * On success, invalidates the auth cache (optional, for consistency).
  */
 export function useRegisterMutation() {
   const queryClient = useQueryClient();
@@ -80,7 +77,7 @@ export function useRegisterMutation() {
       email: string;
       password: string;
       username: string;
-      role?: "ADMIN" | "USER";
+      role?: 'ADMIN' | 'USER';
     }) => authApi.register(credentials),
     onSuccess: (result) => {
       if (result.ok) {
@@ -91,8 +88,8 @@ export function useRegisterMutation() {
 }
 
 /**
- * Mutation de déconnexion (POST /auth/logout).
- * Met le cache session + me à null immédiatement pour afficher la page login sans attendre.
+ * Logout mutation (POST /auth/logout).
+ * Clears session + me cache immediately so the login page shows without waiting.
  */
 export function useLogoutMutation() {
   const queryClient = useQueryClient();

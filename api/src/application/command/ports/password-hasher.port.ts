@@ -1,16 +1,13 @@
-import type { Result } from "typescript-result";
+import type { Result } from 'typescript-result';
 
 /**
- * Port pour le hachage et la vérification des mots de passe.
- * L'implémentation (ex. bcrypt) reste dans les adapters.
+ * Port for hashing and verifying passwords.
+ * Implementation (e.g. bcrypt) lives in adapters.
  */
 export interface PasswordHasherPort {
-	/** Hash un mot de passe en clair. Ne jamais stocker le clair. */
-	hash(plainPassword: string): Promise<Result<string, Error>>;
+  /** Hash a plaintext password. Never store plaintext. */
+  hash(plainPassword: string): Promise<Result<string, Error>>;
 
-	/** Compare un mot de passe en clair au hash stocké (timing-safe). */
-	compare(
-		plainPassword: string,
-		hashedPassword: string,
-	): Promise<Result<boolean, Error>>;
+  /** Compare a plaintext password to the stored hash (timing-safe). */
+  compare(plainPassword: string, hashedPassword: string): Promise<Result<boolean, Error>>;
 }

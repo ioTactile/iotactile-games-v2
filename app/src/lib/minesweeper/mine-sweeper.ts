@@ -1,6 +1,6 @@
-import { Cell } from "./cell";
-import { Timer } from "./timer";
-import type { Difficulty, GameOptions, GameStatus } from "./types";
+import { Cell } from './cell';
+import { Timer } from './timer';
+import type { Difficulty, GameOptions, GameStatus } from './types';
 
 export interface IMineSweeper {
   getBoard(): Cell[][];
@@ -16,7 +16,7 @@ export interface IMineSweeper {
   getDifficulty(): Difficulty;
   setup(options: GameOptions): void;
   restart(options: GameOptions): void;
-  handleCellAction(row: number, col: number, action: "click" | "flag"): void;
+  handleCellAction(row: number, col: number, action: 'click' | 'flag'): void;
 }
 
 export class MineSweeper implements IMineSweeper {
@@ -39,8 +39,8 @@ export class MineSweeper implements IMineSweeper {
     this.numFlags = 0;
     this.numRevealed = 0;
     this.timer = new Timer();
-    this.gameStatus = "waiting";
-    this.difficulty = "beginner";
+    this.gameStatus = 'waiting';
+    this.difficulty = 'beginner';
     this.isFirstClick = true;
   }
 
@@ -82,19 +82,19 @@ export class MineSweeper implements IMineSweeper {
 
   public getGameStatusString(): string {
     switch (this.gameStatus) {
-      case "waiting":
-        return "En attente";
-      case "inProgress":
+      case 'waiting':
+        return 'En attente';
+      case 'inProgress':
         if (this.timer.getIsPaused()) {
-          return "Pause";
+          return 'Pause';
         }
-        return "En cours";
-      case "won":
-        return "Gagné";
-      case "lost":
-        return "Perdu";
+        return 'En cours';
+      case 'won':
+        return 'Gagné';
+      case 'lost':
+        return 'Perdu';
       default:
-        return "En attente";
+        return 'En attente';
     }
   }
 
@@ -110,7 +110,7 @@ export class MineSweeper implements IMineSweeper {
     this.numFlags = 0;
     this.numRevealed = 0;
     this.timer = new Timer();
-    this.gameStatus = "waiting";
+    this.gameStatus = 'waiting';
     this.isFirstClick = true;
     this.board = Array.from({ length: this.numRows }, () =>
       Array.from({ length: this.numCols }, () => new Cell()),
@@ -124,36 +124,30 @@ export class MineSweeper implements IMineSweeper {
     this.setup(options);
   }
 
-  public handleCellAction(
-    row: number,
-    col: number,
-    action: "click" | "flag",
-  ): void {
-    if (this.gameStatus === "lost" || this.gameStatus === "won") {
+  public handleCellAction(row: number, col: number, action: 'click' | 'flag'): void {
+    if (this.gameStatus === 'lost' || this.gameStatus === 'won') {
       return;
     }
 
     this.startTimer();
     const cell = this.board[row][col];
 
-    if (this.gameStatus === "waiting") {
-      this.gameStatus = "inProgress";
+    if (this.gameStatus === 'waiting') {
+      this.gameStatus = 'inProgress';
     }
 
     if (
-      (action === "flag" &&
-        this.numFlags === this.numMines &&
-        !cell.getIsFlagged()) ||
-      (action === "click" && cell.getIsFlagged())
+      (action === 'flag' && this.numFlags === this.numMines && !cell.getIsFlagged()) ||
+      (action === 'click' && cell.getIsFlagged())
     ) {
       return;
     }
 
-    if (action === "flag") {
+    if (action === 'flag') {
       this.handleFlagAction(cell);
-    } else if (action === "click" && this.isFirstClick) {
+    } else if (action === 'click' && this.isFirstClick) {
       this.handleClickAction(cell, row, col, this.isFirstClick);
-    } else if (action === "click" && cell.getIsRevealed()) {
+    } else if (action === 'click' && cell.getIsRevealed()) {
       this.handleClickSelectedAction(row, col);
     } else {
       this.handleClickAction(cell, row, col);
@@ -171,12 +165,7 @@ export class MineSweeper implements IMineSweeper {
     });
   }
 
-  private handleClickAction(
-    cell: Cell,
-    row: number,
-    col: number,
-    isFirstClick?: boolean,
-  ): void {
+  private handleClickAction(cell: Cell, row: number, col: number, isFirstClick?: boolean): void {
     if (isFirstClick) {
       if (cell.getIsMine()) {
         this.relocateMine(row, col);
@@ -189,9 +178,7 @@ export class MineSweeper implements IMineSweeper {
 
     if (cell.getIsMine()) {
       this.handleLoss(cell);
-    } else if (
-      this.numRevealed === this.numRows * this.numCols - this.numMines
-    ) {
+    } else if (this.numRevealed === this.numRows * this.numCols - this.numMines) {
       this.handleWin();
     } else if (cell.getNumAdjacentMines() === 0) {
       this.forEachAdjacentCell(row, col, (adjacentCell, adjRow, adjCol) => {
@@ -202,16 +189,13 @@ export class MineSweeper implements IMineSweeper {
     }
   }
 
-  /** Déplace la mine hors de la case cliquée (premier clic toujours sûr). */
+  /** Move the mine off the clicked cell (first click is always safe). */
   private relocateMine(fromRow: number, fromCol: number): void {
     this.board[fromRow][fromCol].setIsMine(false);
 
     for (let row = 0; row < this.numRows; row++) {
       for (let col = 0; col < this.numCols; col++) {
-        if (
-          (row !== fromRow || col !== fromCol) &&
-          !this.board[row][col].getIsMine()
-        ) {
+        if ((row !== fromRow || col !== fromCol) && !this.board[row][col].getIsMine()) {
           this.board[row][col].setIsMine(true);
           this.generateNumAdjacentMines();
           return;
@@ -297,13 +281,13 @@ export class MineSweeper implements IMineSweeper {
     cell.setIsMineClicked(true);
     this.revealAllMines();
     this.timer.stop();
-    this.gameStatus = "lost";
+    this.gameStatus = 'lost';
   }
 
   private handleWin(): void {
     this.revealAllMines();
     this.timer.stop();
-    this.gameStatus = "won";
+    this.gameStatus = 'won';
   }
 
   private revealAllMines(): void {
@@ -318,7 +302,7 @@ export class MineSweeper implements IMineSweeper {
   }
 
   private startTimer(): void {
-    if (this.gameStatus === "waiting" && !this.timer.isStarted()) {
+    if (this.gameStatus === 'waiting' && !this.timer.isStarted()) {
       this.timer.start();
     }
   }

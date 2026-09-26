@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import Link from 'next/link';
 
-import { SoundToggle } from "@/components/dice/SoundToggle";
-import { useI18n } from "@/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
+import { SoundToggle } from '@/components/dice/SoundToggle';
+import { useI18n } from '@/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
 export type Player = { id: string; name: string };
 
@@ -15,25 +15,15 @@ type PlayerBarProps = {
   className?: string;
 };
 
-export function PlayerBar({
-  players,
-  currentPlayerId,
-  backHref = "/",
-  className,
-}: PlayerBarProps) {
+export function PlayerBar({ players, currentPlayerId, backHref = '/', className }: PlayerBarProps) {
   const { t } = useI18n();
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 bg-dice-main-primary/80 px-3 py-2",
-        className,
-      )}
-    >
+    <div className={cn('flex items-center gap-2 bg-dice-main-primary/80 px-3 py-2', className)}>
       <Link
         href={backHref}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-dice-main-tertiary text-dice-tertiary-foreground hover:opacity-90"
-        aria-label={t("common.back")}
+        aria-label={t('common.back')}
       >
         <svg
           className="h-6 w-6"
@@ -42,12 +32,7 @@ export function PlayerBar({
           viewBox="0 0 24 24"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </Link>
 
@@ -56,10 +41,10 @@ export function PlayerBar({
           key={p.id}
           type="button"
           className={cn(
-            "rounded-sm px-4 py-2 text-sm font-medium transition-colors",
+            'rounded-sm px-4 py-2 text-sm font-medium transition-colors',
             p.id === currentPlayerId
-              ? "bg-dice-main-tertiary text-dice-tertiary-foreground"
-              : "bg-dice-foreground/10 text-dice-foreground hover:bg-dice-foreground/20",
+              ? 'bg-dice-main-tertiary text-dice-tertiary-foreground'
+              : 'bg-dice-foreground/10 text-dice-foreground hover:bg-dice-foreground/20',
           )}
         >
           {p.name}

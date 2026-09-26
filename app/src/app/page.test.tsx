@@ -1,15 +1,15 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useAuth } from "@/hooks/use-auth";
-import { I18nProvider } from "@/i18n/I18nProvider";
-import { games } from "@/lib/games/games";
+import { useAuth } from '@/hooks/use-auth';
+import { I18nProvider } from '@/i18n/I18nProvider';
+import { games } from '@/lib/games/games';
 
-import Home from "./page";
+import Home from './page';
 
-vi.mock("@/hooks/use-auth");
+vi.mock('@/hooks/use-auth');
 
-describe("Home", () => {
+describe('Home', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useAuth).mockReturnValue({
@@ -32,21 +32,19 @@ describe("Home", () => {
       </I18nProvider>,
     );
 
-  it("affiche le titre et la liste des jeux", () => {
+  it('affiche le titre et la liste des jeux', () => {
     renderWithI18n();
-    expect(
-      screen.getByRole("heading", { name: /choisissez un jeu/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /choisissez un jeu/i })).toBeInTheDocument();
     for (const game of games) {
-      const link = screen.getByRole("link", { name: new RegExp(game.name, "i") });
+      const link = screen.getByRole('link', { name: new RegExp(game.name, 'i') });
       expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute("href", game.href);
+      expect(link).toHaveAttribute('href', game.href);
     }
   });
 
   it("affiche le bouton Se connecter quand l'utilisateur n'est pas connecté", () => {
     renderWithI18n();
-    const buttons = screen.getAllByRole("button", { name: /se connecter/i });
+    const buttons = screen.getAllByRole('button', { name: /se connecter/i });
     expect(buttons.length).toBeGreaterThanOrEqual(1);
     expect(buttons[0]).toBeInTheDocument();
   });
@@ -54,17 +52,17 @@ describe("Home", () => {
   it("affiche le menu utilisateur quand l'utilisateur est connecté", () => {
     vi.mocked(useAuth).mockReturnValue({
       user: {
-        id: "u1",
-        email: "u@test.com",
-        username: "TestUser",
-        role: "USER",
-        createdAt: "",
-        updatedAt: "",
+        id: 'u1',
+        email: 'u@test.com',
+        username: 'TestUser',
+        role: 'USER',
+        createdAt: '',
+        updatedAt: '',
         deletedAt: null,
       },
       userLoading: false,
       userError: null,
-      accessToken: "token",
+      accessToken: 'token',
       isAuthenticated: true,
       isInitialized: true,
       loginMutation: {} as never,
@@ -72,7 +70,7 @@ describe("Home", () => {
       logoutMutation: {} as never,
     });
     renderWithI18n();
-    expect(screen.getByText("TestUser")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /déconnexion/i })).toBeInTheDocument();
+    expect(screen.getByText('TestUser')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /déconnexion/i })).toBeInTheDocument();
   });
 });

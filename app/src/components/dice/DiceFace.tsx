@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import Image from "next/image";
+import Image from 'next/image';
 
-import {
-  DICE_FACE_IMAGES,
-  DICE_FACE_IMAGES_WHITE,
-} from "@/constants/assets.constant";
-import { useI18n } from "@/i18n/I18nProvider";
-import { cn } from "@/lib/utils";
+import { DICE_FACE_IMAGES, DICE_FACE_IMAGES_WHITE } from '@/constants/assets.constant';
+import { useI18n } from '@/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
 type DiceFaceProps = {
   face: number; // 1-6
@@ -15,7 +12,7 @@ type DiceFaceProps = {
   onClick: () => void;
   disabled?: boolean;
   useWhite?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 };
 
@@ -38,11 +35,11 @@ export function DiceFace({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={locked}
-      aria-label={t("dice.diceFaceLabel", face, locked)}
+      aria-label={t('dice.diceFaceLabel', face, locked)}
       className={cn(
-        "relative transition-all size-12 sm:size-14",
-        !disabled && "cursor-pointer hover:scale-105 active:scale-95",
-        disabled && "cursor-not-allowed opacity-70",
+        'relative transition-all size-12 sm:size-14',
+        !disabled && 'cursor-pointer hover:scale-105 active:scale-95',
+        disabled && 'cursor-not-allowed opacity-70',
         className,
       )}
     >

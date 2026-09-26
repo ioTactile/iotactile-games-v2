@@ -1,6 +1,7 @@
 {
 	"name": "iotactile-games",
 	"private": true,
+	"license": "UNLICENSED",
 	"scripts": {
 		"prepare": "husky",
 		"audit": "pnpm -C api audit --audit-level=high || pnpm -C app audit --audit-level=high || exit 0",
