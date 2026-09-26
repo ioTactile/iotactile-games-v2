@@ -66,4 +66,3 @@ export function registerLoginFailure(key: string, now = Date.now()): void {
 export function resetLoginAttempts(key: string): void {
 	attempts.delete(key);
 }
-

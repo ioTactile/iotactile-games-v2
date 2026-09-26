@@ -6,4 +6,4 @@ import path from "node:path";
 import { config } from "dotenv";
 
 const repoRoot = path.join(import.meta.dirname, "..", "..", "..");
-config({ path: path.join(repoRoot, ".env") });
+config({ path: path.join(repoRoot, ".env"), quiet: true });

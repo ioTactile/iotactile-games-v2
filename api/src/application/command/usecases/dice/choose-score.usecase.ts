@@ -5,7 +5,12 @@ import type {
 	DiceSessionRepository,
 	DiceSessionStateRepository,
 } from "@/domain/dice/dice.repository.ts";
-import type { DicePlayerScores } from "@/domain/dice/dice.type.ts";
+import {
+	type DicePlayerScores,
+	DiceSessionStatus,
+	MAX_TRIES,
+	NUM_DICES,
+} from "@/domain/dice/dice.type.ts";
 import {
 	computeBonusAndTotal,
 	computeScoreFor,
@@ -49,7 +54,7 @@ export class ChooseScoreUsecase {
 		const sessionResult = await this.sessionRepo.findById(input.sessionId);
 		if (!sessionResult.ok) return sessionResult;
 		const session = sessionResult.value;
-		if (!session || session.status !== "PLAYING") {
+		if (session?.status !== DiceSessionStatus.PLAYING) {
 			return Result.error(new Error("SESSION_NOT_PLAYING"));
 		}
 
@@ -106,18 +111,15 @@ export class ChooseScoreUsecase {
 			newRemainingTurns = state.remainingTurns - 1;
 		}
 
-		const updates: Parameters<typeof this.stateRepo.updateState>[1] = {
+		const updates: Parameters<DiceSessionStateRepository["updateState"]>[1] = {
 			scores: newScores,
 			currentPlayerSlot: nextPlayer.slot,
 			remainingTurns: newRemainingTurns,
-			dices: [
-				{ face: 1, locked: false },
-				{ face: 1, locked: false },
-				{ face: 1, locked: false },
-				{ face: 1, locked: false },
-				{ face: 1, locked: false },
-			],
-			triesLeft: 3,
+			dices: Array.from({ length: NUM_DICES }, () => ({
+				face: 1,
+				locked: false,
+			})),
+			triesLeft: MAX_TRIES,
 		};
 
 		const updateResult = await this.stateRepo.updateState(
@@ -127,7 +129,10 @@ export class ChooseScoreUsecase {
 		if (!updateResult.ok) return updateResult;
 
 		if (newRemainingTurns <= 0) {
-			await this.sessionRepo.updateStatus(input.sessionId, "FINISHED");
+			await this.sessionRepo.updateStatus(
+				input.sessionId,
+				DiceSessionStatus.FINISHED,
+			);
 		}
 
 		const viewResult = await this.getSessionView(input.sessionId);

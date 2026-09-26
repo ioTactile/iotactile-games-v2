@@ -1,12 +1,5 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import type { AccessTokenPayload } from "@/application/command/ports/auth-token.port.ts";
-
-/** Type minimal pour le socket WebSocket (handler @fastify/websocket). */
-interface DiceWsSocket {
-	send(payload: string): void;
-	close(code?: number, reason?: string): void;
-	on(event: string, fn: (data?: string | Buffer) => void): void;
-}
+import type { FastifyInstance } from "fastify";
+import { createDiceWsHandler } from "@/adapters/primary/http/routes/dice-ws.handler.ts";
 
 import {
 	createDiceSessionBodySchema,
@@ -21,9 +14,11 @@ import { PrismaDiceSessionRepository } from "@/adapters/secondary/persistence/Pr
 import { PrismaDiceSessionStateRepository } from "@/adapters/secondary/persistence/PrismaDiceSessionStateRepository.ts";
 import { PrismaUserRepository } from "@/adapters/secondary/persistence/PrismaUserRepository.ts";
 import { DiceBroadcasterAdapter } from "@/adapters/secondary/realtime/DiceBroadcasterAdapter.ts";
+import type { AccessTokenPayload } from "@/application/command/ports/auth-token.port.ts";
 import { ChooseScoreUsecase } from "@/application/command/usecases/dice/choose-score.usecase.ts";
 import { CreateDiceSessionUsecase } from "@/application/command/usecases/dice/create-dice-session.usecase.ts";
 import { JoinDiceSessionUsecase } from "@/application/command/usecases/dice/join-dice-session.usecase.ts";
+import { JoinDiceSessionByCodeUsecase } from "@/application/command/usecases/dice/join-dice-session-by-code.usecase.ts";
 import { LeaveDiceSessionUsecase } from "@/application/command/usecases/dice/leave-dice-session.usecase.ts";
 import { LockDiceUsecase } from "@/application/command/usecases/dice/lock-dice.usecase.ts";
 import { RollDiceUsecase } from "@/application/command/usecases/dice/roll-dice.usecase.ts";
@@ -32,10 +27,8 @@ import { GetDiceSessionUsecase } from "@/application/query/usecases/dice/get-dic
 import { ListMyDiceSessionsUsecase } from "@/application/query/usecases/dice/list-my-dice-sessions.usecase.ts";
 import { ListPublicDiceSessionsUsecase } from "@/application/query/usecases/dice/list-public-dice-sessions.usecase.ts";
 import { GetUserByIdUsecase } from "@/application/query/usecases/user/get-user-by-id.usecase.ts";
-import { SCORE_KEYS } from "@/domain/dice/diceInputs.ts";
 import { getRedisClient } from "@/pkg/cache/redis.ts";
 import { config } from "@/pkg/config/index.ts";
-import { extractAccessTokenFromProtocols } from "@/pkg/security/wsAuth.ts";
 
 const sessionRepo = new CachedDiceSessionRepository({
 	inner: new PrismaDiceSessionRepository(),
@@ -69,16 +62,22 @@ async function getDisplayName(
 export async function registerDiceRoutes(server: FastifyInstance) {
 	const createUsecase = new CreateDiceSessionUsecase(sessionRepo);
 	const joinUsecase = new JoinDiceSessionUsecase(sessionRepo, playerRepo);
-	const leaveUsecase = new LeaveDiceSessionUsecase(sessionRepo, playerRepo);
-	const startUsecase = new StartDiceGameUsecase(
+	const joinByCodeUsecase = new JoinDiceSessionByCodeUsecase(
 		sessionRepo,
 		playerRepo,
-		stateRepo,
 	);
+	const leaveUsecase = new LeaveDiceSessionUsecase(sessionRepo, playerRepo);
 	const getUsecase = new GetDiceSessionUsecase(
 		sessionRepo,
 		playerRepo,
 		stateRepo,
+	);
+	const startUsecase = new StartDiceGameUsecase(
+		sessionRepo,
+		playerRepo,
+		stateRepo,
+		broadcaster,
+		getUsecase,
 	);
 	const rollUsecase = new RollDiceUsecase(
 		sessionRepo,
@@ -266,19 +265,8 @@ export async function registerDiceRoutes(server: FastifyInstance) {
 					error: "displayName requis.",
 				});
 			}
-			const sessionByCodeResult = await sessionRepo.findByJoinCode(
-				body.joinCode.trim().toUpperCase(),
-			);
-			if (!sessionByCodeResult.ok) {
-				request.log.error(sessionByCodeResult.error);
-				return reply.status(500).send({ error: "Erreur serveur." });
-			}
-			const session = sessionByCodeResult.value;
-			if (!session) {
-				return reply.status(404).send({ error: "SESSION_NOT_FOUND" });
-			}
-			const result = await joinUsecase.execute({
-				sessionId: session.id,
+			const result = await joinByCodeUsecase.execute({
+				joinCode: body.joinCode,
 				userId,
 				guestId,
 				displayName,
@@ -292,7 +280,8 @@ export async function registerDiceRoutes(server: FastifyInstance) {
 					err === "SESSION_FULL" ||
 					err === "ALREADY_IN_SESSION" ||
 					err === "DISPLAY_NAME_REQUIRED" ||
-					err === "USER_OR_GUEST_REQUIRED"
+					err === "USER_OR_GUEST_REQUIRED" ||
+					err === "JOIN_CODE_REQUIRED"
 				) {
 					return reply.status(400).send({ error: err });
 				}
@@ -400,198 +389,17 @@ export async function registerDiceRoutes(server: FastifyInstance) {
 		},
 	);
 
-	// WebSocket : listeners attachés de façon synchrone ; la validation async se fait dans connect()
+	// WebSocket : handler dédié (auth, membership, protocole jeu)
 	server.get(
 		"/sessions/:sessionId/ws",
 		{ websocket: true } as Record<string, unknown>,
-		(connectionOrReq: unknown, requestOrReply: unknown): void => {
-			// @fastify/websocket passe (socket, request) à l’exécution
-			const socket = connectionOrReq as DiceWsSocket;
-			const request = requestOrReply as FastifyRequest<{
-				Params: { sessionId: string };
-				Querystring: { guestId?: string };
-			}>;
-			const params = diceSessionIdParamsSchema.safeParse(request.params);
-			if (!params.success) {
-				socket.close(1008, "sessionId invalide");
-				return;
-			}
-			const sessionId = params.data.sessionId;
-			const guestId =
-				typeof request.query?.guestId === "string"
-					? request.query.guestId
-					: undefined;
-
-			let resolveCreds: (value: {
-				userId: string | null;
-				guestId: string | null;
-			}) => void;
-			let rejectCreds: (reason: Error) => void;
-			const credsPromise = new Promise<{
-				userId: string | null;
-				guestId: string | null;
-			}>((resolve, reject) => {
-				resolveCreds = resolve;
-				rejectCreds = reject;
-			});
-
-			const connect = async () => {
-				let userId: string | null = null;
-				let resolvedGuestId: string | null = null;
-				const protocols = request.headers["sec-websocket-protocol"];
-				const bearerToken = extractAccessTokenFromProtocols(protocols);
-				if (bearerToken) {
-					const result = await server.authToken.verifyAccessToken(bearerToken);
-					if (result.ok) userId = result.value.sub;
-				}
-				if (!userId && guestId) resolvedGuestId = guestId;
-				if (!userId && !resolvedGuestId) {
-					socket.close(1008, "token ou guestId requis");
-					rejectCreds(new Error("token ou guestId requis"));
-					return;
-				}
-
-				const playerResult = await playerRepo.findBySessionAndUserOrGuest(
-					sessionId,
-					userId,
-					resolvedGuestId,
-				);
-				if (!playerResult.ok || !playerResult.value) {
-					socket.close(1008, "non membre de la session");
-					rejectCreds(new Error("non membre de la session"));
-					return;
-				}
-
-				resolveCreds({ userId, guestId: resolvedGuestId });
-
-				const unregister = broadcaster.register(sessionId, (payload) => {
-					socket.send(payload as string);
-				});
-
-				socket.on("close", () => {
-					unregister();
-				});
-
-				const r = await getUsecase.execute(sessionId);
-				if (r.ok && r.value) {
-					socket.send(
-						JSON.stringify({
-							type: "STATE",
-							payload: r.value,
-						}),
-					);
-				}
-			};
-
-			socket.on("message", async (raw: string | Buffer | undefined) => {
-				let creds: { userId: string | null; guestId: string | null };
-				try {
-					creds = await credsPromise;
-				} catch {
-					return;
-				}
-				let data: { type: string; payload?: unknown };
-				try {
-					const str =
-						raw === undefined
-							? ""
-							: typeof raw === "string"
-								? raw
-								: raw.toString("utf8");
-					data = JSON.parse(str) as { type: string; payload?: unknown };
-				} catch {
-					socket.send(JSON.stringify({ type: "ERROR", error: "INVALID_JSON" }));
-					return;
-				}
-
-				if (data.type === "ROLL") {
-					const res = await rollUsecase.execute({
-						sessionId,
-						userId: creds.userId,
-						guestId: creds.guestId,
-					});
-					if (!res.ok) {
-						socket.send(
-							JSON.stringify({
-								type: "ERROR",
-								error: res.error.message,
-							}),
-						);
-					}
-					return;
-				}
-
-				if (data.type === "LOCK") {
-					const diceIndex =
-						typeof data.payload === "object" &&
-						data.payload !== null &&
-						"diceIndex" in data.payload
-							? Number((data.payload as { diceIndex: number }).diceIndex)
-							: NaN;
-					if (Number.isNaN(diceIndex)) {
-						socket.send(
-							JSON.stringify({
-								type: "ERROR",
-								error: "diceIndex requis",
-							}),
-						);
-						return;
-					}
-					const res = await lockUsecase.execute({
-						sessionId,
-						userId: creds.userId,
-						guestId: creds.guestId,
-						diceIndex,
-					});
-					if (!res.ok) {
-						socket.send(
-							JSON.stringify({
-								type: "ERROR",
-								error: res.error.message,
-							}),
-						);
-					}
-					return;
-				}
-
-				if (data.type === "CHOOSE_SCORE") {
-					const scoreKey =
-						typeof data.payload === "object" &&
-						data.payload !== null &&
-						"scoreKey" in data.payload
-							? (data.payload as { scoreKey: string }).scoreKey
-							: undefined;
-					if (
-						!scoreKey ||
-						typeof scoreKey !== "string" ||
-						!SCORE_KEYS.includes(scoreKey as (typeof SCORE_KEYS)[number])
-					) {
-						socket.send(
-							JSON.stringify({
-								type: "ERROR",
-								error: "scoreKey invalide",
-							}),
-						);
-						return;
-					}
-					const res = await chooseScoreUsecase.execute({
-						sessionId,
-						userId: creds.userId,
-						guestId: creds.guestId,
-						scoreKey: scoreKey as (typeof SCORE_KEYS)[number],
-					});
-					if (!res.ok) {
-						socket.send(
-							JSON.stringify({
-								type: "ERROR",
-								error: res.error.message,
-							}),
-						);
-					}
-				}
-			});
-
-			void connect();
-		},
+		createDiceWsHandler(server, {
+			playerRepo,
+			broadcaster,
+			getUsecase,
+			rollUsecase,
+			lockUsecase,
+			chooseScoreUsecase,
+		}),
 	);
 }

@@ -94,7 +94,7 @@ describe("LockDiceUsecase", () => {
 			findBySession: vi.fn(),
 			updateState: vi.fn(),
 		};
-		broadcaster = { broadcast: vi.fn() };
+		broadcaster = { register: vi.fn(() => () => {}), broadcast: vi.fn() };
 	});
 
 	it("retourne USER_OR_GUEST_REQUIRED si ni userId ni guestId", async () => {
@@ -292,5 +292,49 @@ describe("LockDiceUsecase", () => {
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.error.message).toBe("UPDATE_FAILED");
+	});
+
+	it("déverrouille un dé déjà locked", async () => {
+		const state = createState({
+			dices: [
+				{ face: 1, locked: true },
+				{ face: 2, locked: false },
+				{ face: 3, locked: false },
+				{ face: 4, locked: false },
+				{ face: 5, locked: false },
+			],
+		});
+		vi.mocked(sessionRepo.findById).mockResolvedValue(
+			Result.ok(createSession()),
+		);
+		vi.mocked(playerRepo.findBySessionAndUserOrGuest).mockResolvedValue(
+			Result.ok(createPlayer()),
+		);
+		vi.mocked(playerRepo.findBySession).mockResolvedValue(
+			Result.ok([createPlayer()]),
+		);
+		vi.mocked(stateRepo.findBySession).mockResolvedValue(Result.ok(state));
+		vi.mocked(stateRepo.updateState).mockResolvedValue(Result.ok(state));
+
+		const usecase = new LockDiceUsecase(
+			sessionRepo,
+			playerRepo,
+			stateRepo,
+			broadcaster,
+		);
+		const result = await usecase.execute({
+			sessionId: "session-1",
+			userId: "user-1",
+			guestId: null,
+			diceIndex: 0,
+		});
+
+		expect(result.ok).toBe(true);
+		expect(stateRepo.updateState).toHaveBeenCalledWith(
+			"session-1",
+			expect.objectContaining({
+				dices: expect.arrayContaining([{ face: 1, locked: false }]),
+			}),
+		);
 	});
 });

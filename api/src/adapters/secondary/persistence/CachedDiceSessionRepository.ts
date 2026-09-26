@@ -22,6 +22,15 @@ export class CachedDiceSessionRepository implements DiceSessionRepository {
 		this.publicWaitingTtlSeconds = options.publicWaitingTtlSeconds;
 	}
 
+	private async invalidatePublicWaitingCache(): Promise<void> {
+		if (!this.redis) return;
+		try {
+			await this.redis.del(PUBLIC_WAITING_KEY);
+		} catch {
+			// L'invalidation ne doit pas bloquer la mutation
+		}
+	}
+
 	async create(session: {
 		name: string;
 		isPublic?: boolean;
@@ -31,7 +40,11 @@ export class CachedDiceSessionRepository implements DiceSessionRepository {
 			displayName: string;
 		};
 	}): Promise<Result<DiceSessionType, Error>> {
-		return this.inner.create(session);
+		const result = await this.inner.create(session);
+		if (result.ok) {
+			await this.invalidatePublicWaitingCache();
+		}
+		return result;
 	}
 
 	async findById(id: string): Promise<Result<DiceSessionType | null, Error>> {
@@ -89,10 +102,18 @@ export class CachedDiceSessionRepository implements DiceSessionRepository {
 		id: string,
 		status: Parameters<DiceSessionRepository["updateStatus"]>[1],
 	): Promise<Result<void, Error>> {
-		return this.inner.updateStatus(id, status);
+		const result = await this.inner.updateStatus(id, status);
+		if (result.ok) {
+			await this.invalidatePublicWaitingCache();
+		}
+		return result;
 	}
 
 	async delete(id: string): Promise<Result<void, Error>> {
-		return this.inner.delete(id);
+		const result = await this.inner.delete(id);
+		if (result.ok) {
+			await this.invalidatePublicWaitingCache();
+		}
+		return result;
 	}
 }

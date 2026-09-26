@@ -26,4 +26,3 @@ describe("extractAccessTokenFromProtocols", () => {
 		expect(extractAccessTokenFromProtocols(header)).toBe(token);
 	});
 });
-

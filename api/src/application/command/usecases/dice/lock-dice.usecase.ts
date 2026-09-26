@@ -5,6 +5,7 @@ import type {
 	DiceSessionRepository,
 	DiceSessionStateRepository,
 } from "@/domain/dice/dice.repository.ts";
+import { DiceSessionStatus, NUM_DICES } from "@/domain/dice/dice.type.ts";
 
 export interface LockDiceInput {
 	sessionId: string;
@@ -35,14 +36,14 @@ export class LockDiceUsecase {
 		if (!input.userId && !input.guestId) {
 			return Result.error(new Error("USER_OR_GUEST_REQUIRED"));
 		}
-		if (input.diceIndex < 0 || input.diceIndex > 4) {
+		if (input.diceIndex < 0 || input.diceIndex >= NUM_DICES) {
 			return Result.error(new Error("INVALID_DICE_INDEX"));
 		}
 
 		const sessionResult = await this.sessionRepo.findById(input.sessionId);
 		if (!sessionResult.ok) return sessionResult;
 		const session = sessionResult.value;
-		if (!session || session.status !== "PLAYING") {
+		if (session?.status !== DiceSessionStatus.PLAYING) {
 			return Result.error(new Error("SESSION_NOT_PLAYING"));
 		}
 

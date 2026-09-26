@@ -1,10 +1,13 @@
 import { Result } from "typescript-result";
+import type { DiceBroadcasterPort } from "@/application/command/ports/dice-broadcaster.port.ts";
+import type { GetDiceSessionUsecase } from "@/application/query/usecases/dice/get-dice-session.usecase.ts";
 import type {
 	DiceSessionPlayerRepository,
 	DiceSessionRepository,
 	DiceSessionStateRepository,
 } from "@/domain/dice/dice.repository.ts";
 import {
+	DiceSessionStatus,
 	EMPTY_DICE_SCORES,
 	MAX_TRIES,
 	NUM_DICES,
@@ -21,15 +24,21 @@ export class StartDiceGameUsecase {
 	private readonly sessionRepo: DiceSessionRepository;
 	private readonly playerRepo: DiceSessionPlayerRepository;
 	private readonly stateRepo: DiceSessionStateRepository;
+	private readonly broadcaster: DiceBroadcasterPort;
+	private readonly getSession: GetDiceSessionUsecase;
 
 	constructor(
 		sessionRepo: DiceSessionRepository,
 		playerRepo: DiceSessionPlayerRepository,
 		stateRepo: DiceSessionStateRepository,
+		broadcaster: DiceBroadcasterPort,
+		getSession: GetDiceSessionUsecase,
 	) {
 		this.sessionRepo = sessionRepo;
 		this.playerRepo = playerRepo;
 		this.stateRepo = stateRepo;
+		this.broadcaster = broadcaster;
+		this.getSession = getSession;
 	}
 
 	async execute(input: StartDiceGameInput): Promise<Result<void, Error>> {
@@ -43,7 +52,7 @@ export class StartDiceGameUsecase {
 		if (!session) {
 			return Result.error(new Error("SESSION_NOT_FOUND"));
 		}
-		if (session.status !== "WAITING") {
+		if (session.status !== DiceSessionStatus.WAITING) {
 			return Result.error(new Error("SESSION_ALREADY_STARTED_OR_FINISHED"));
 		}
 
@@ -82,9 +91,17 @@ export class StartDiceGameUsecase {
 
 		const updateResult = await this.sessionRepo.updateStatus(
 			input.sessionId,
-			"PLAYING",
+			DiceSessionStatus.PLAYING,
 		);
 		if (!updateResult.ok) return updateResult;
+
+		const viewResult = await this.getSession.execute(input.sessionId);
+		if (viewResult.ok && viewResult.value) {
+			this.broadcaster.broadcast(input.sessionId, {
+				type: "STATE",
+				payload: viewResult.value,
+			});
+		}
 
 		return Result.ok(undefined);
 	}

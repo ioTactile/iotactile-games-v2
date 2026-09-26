@@ -5,6 +5,7 @@ import type {
 	DiceSessionRepository,
 	DiceSessionStateRepository,
 } from "@/domain/dice/dice.repository.ts";
+import { DiceSessionStatus } from "@/domain/dice/dice.type.ts";
 
 function randomFace(): number {
 	return Math.floor(Math.random() * 6) + 1;
@@ -42,7 +43,7 @@ export class RollDiceUsecase {
 		const sessionResult = await this.sessionRepo.findById(input.sessionId);
 		if (!sessionResult.ok) return sessionResult;
 		const session = sessionResult.value;
-		if (!session || session.status !== "PLAYING") {
+		if (session?.status !== DiceSessionStatus.PLAYING) {
 			return Result.error(new Error("SESSION_NOT_PLAYING"));
 		}
 

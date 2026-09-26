@@ -1,3 +1,9 @@
+import {
+	BONUS_POINTS,
+	BONUS_THRESHOLD,
+	NUM_DICES,
+} from "@/domain/dice/dice.type.ts";
+
 /**
  * Calcul des scores pour chaque ligne de la feuille de score (Yams / 5 dés).
  * Les dés sont un tableau de 5 faces (1-6).
@@ -17,51 +23,51 @@ function countFaces(dices: DiceFaceInput[]): Record<number, number> {
 }
 
 export function oneInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 1).length * 1;
 }
 
 export function twoInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 2).length * 2;
 }
 
 export function threeInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 3).length * 3;
 }
 
 export function fourInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 4).length * 4;
 }
 
 export function fiveInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 5).length * 5;
 }
 
 export function sixInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.filter((d) => d.face === 6).length * 6;
 }
 
 export function threeOfAKindInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const faceCounts = countFaces(dices);
 	const hasThree = Object.values(faceCounts).some((c) => c >= 3);
 	return hasThree ? dices.reduce((acc, d) => acc + d.face, 0) : 0;
 }
 
 export function fourOfAKindInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const faceCounts = countFaces(dices);
 	const hasFour = Object.values(faceCounts).some((c) => c >= 4);
 	return hasFour ? dices.reduce((acc, d) => acc + d.face, 0) : 0;
 }
 
 export function fullHouseInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const sorted = [...dices].sort((a, b) => a.face - b.face);
 	const isFullHouse =
 		(sorted[0].face === sorted[1].face &&
@@ -77,7 +83,7 @@ export function fullHouseInput(dices: DiceFaceInput[]): number {
 }
 
 export function smallStraightInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const faces = new Set(dices.map((d) => d.face));
 	const isSmall =
 		(faces.has(1) && faces.has(2) && faces.has(3) && faces.has(4)) ||
@@ -87,7 +93,7 @@ export function smallStraightInput(dices: DiceFaceInput[]): number {
 }
 
 export function largeStraightInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const sorted = [...dices].sort((a, b) => a.face - b.face);
 	const isLarge =
 		(sorted[0].face === 1 &&
@@ -104,13 +110,13 @@ export function largeStraightInput(dices: DiceFaceInput[]): number {
 }
 
 export function diceInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	const first = dices[0].face;
 	return dices.every((d) => d.face === first) ? 50 : 0;
 }
 
 export function chanceInput(dices: DiceFaceInput[]): number {
-	if (!dices || dices.length !== 5) return 0;
+	if (dices?.length !== NUM_DICES) return 0;
 	return dices.reduce((acc, d) => acc + d.face, 0);
 }
 
@@ -177,7 +183,7 @@ export function computeBonusAndTotal(scores: DicePlayerScoresLike): {
 	total: number;
 } {
 	const upperSum = UPPER_KEYS.reduce((acc, k) => acc + (scores[k] ?? 0), 0);
-	const bonus = upperSum >= 63 ? 35 : 0;
+	const bonus = upperSum >= BONUS_THRESHOLD ? BONUS_POINTS : 0;
 	const lowerKeys: ScoreKey[] = [
 		"threeOfAKind",
 		"fourOfAKind",

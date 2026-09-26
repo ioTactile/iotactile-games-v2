@@ -27,13 +27,12 @@
 
 		"outDir": "dist",
 		"rootDir": ".",
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
-			"@/ports/*": ["src/application/ports/*"],
-			"@/domain/*": ["src/domain/*"],
-			"@/application/*": ["src/application/*"],
-			"@/adapters/*": ["src/adapters/*"]
+			"@/*": ["./src/*"],
+			"@/ports/*": ["./src/application/ports/*"],
+			"@/domain/*": ["./src/domain/*"],
+			"@/application/*": ["./src/application/*"],
+			"@/adapters/*": ["./src/adapters/*"]
 		}
 	},
 	"include": ["src/**/*", "generated/**/*", "tests"],

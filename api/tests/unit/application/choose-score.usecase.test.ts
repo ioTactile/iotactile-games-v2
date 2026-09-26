@@ -95,7 +95,7 @@ describe("ChooseScoreUsecase", () => {
 			findBySession: vi.fn(),
 			updateState: vi.fn(),
 		};
-		broadcaster = { broadcast: vi.fn() };
+		broadcaster = { register: vi.fn(() => () => {}), broadcast: vi.fn() };
 	});
 
 	it("retourne USER_OR_GUEST_REQUIRED si ni userId ni guestId", async () => {
@@ -393,5 +393,75 @@ describe("ChooseScoreUsecase", () => {
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.error.message).toBe("UPDATE_FAILED");
+	});
+
+	it("calcule le bonus et décrémente remainingTurns en fin de round", async () => {
+		const session = createSession();
+		const highScores = {
+			...createState().scores[1],
+			one: 5,
+			two: 10,
+			three: 15,
+			four: 16,
+			five: 20,
+			six: 0,
+		};
+		const state = createState({
+			remainingTurns: 5,
+			currentPlayerSlot: 2,
+			scores: {
+				1: highScores,
+				2: { ...createState().scores[1] },
+			},
+			dices: [
+				{ face: 6, locked: false },
+				{ face: 6, locked: false },
+				{ face: 6, locked: false },
+				{ face: 1, locked: false },
+				{ face: 1, locked: false },
+			],
+		});
+		const players = [
+			createPlayer({ slot: 1, orderIndex: 0, userId: "user-1" }),
+			createPlayer({
+				id: "p2",
+				slot: 2,
+				orderIndex: 1,
+				userId: "user-2",
+			}),
+		];
+		vi.mocked(sessionRepo.findById).mockResolvedValue(Result.ok(session));
+		vi.mocked(playerRepo.findBySessionAndUserOrGuest).mockResolvedValue(
+			Result.ok(players[1]),
+		);
+		vi.mocked(playerRepo.findBySession).mockResolvedValue(Result.ok(players));
+		vi.mocked(stateRepo.findBySession).mockResolvedValue(Result.ok(state));
+		vi.mocked(stateRepo.updateState).mockResolvedValue(Result.ok(state));
+
+		const usecase = new ChooseScoreUsecase(
+			sessionRepo,
+			playerRepo,
+			stateRepo,
+			broadcaster,
+		);
+		const result = await usecase.execute({
+			sessionId: "session-1",
+			userId: "user-2",
+			guestId: null,
+			scoreKey: "six",
+		});
+
+		expect(result.ok).toBe(true);
+		expect(stateRepo.updateState).toHaveBeenCalledWith(
+			"session-1",
+			expect.objectContaining({
+				currentPlayerSlot: 1,
+				remainingTurns: 4,
+				triesLeft: 3,
+				scores: expect.objectContaining({
+					2: expect.objectContaining({ six: 18 }),
+				}),
+			}),
+		);
 	});
 });

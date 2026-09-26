@@ -1,6 +1,8 @@
 import { Result } from "typescript-result";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { DiceBroadcasterPort } from "@/application/command/ports/dice-broadcaster.port.ts";
 import { StartDiceGameUsecase } from "@/application/command/usecases/dice/start-dice-game.usecase.ts";
+import type { GetDiceSessionUsecase } from "@/application/query/usecases/dice/get-dice-session.usecase.ts";
 import type {
 	DiceSessionPlayerRepository,
 	DiceSessionRepository,
@@ -69,6 +71,8 @@ describe("StartDiceGameUsecase", () => {
 	let sessionRepo: DiceSessionRepository;
 	let playerRepo: DiceSessionPlayerRepository;
 	let stateRepo: DiceSessionStateRepository;
+	let broadcaster: DiceBroadcasterPort;
+	let getSession: GetDiceSessionUsecase;
 
 	beforeEach(() => {
 		sessionRepo = {
@@ -92,14 +96,27 @@ describe("StartDiceGameUsecase", () => {
 			findBySession: vi.fn(),
 			updateState: vi.fn(),
 		};
+		broadcaster = {
+			register: vi.fn(() => () => {}),
+			broadcast: vi.fn(),
+		};
+		getSession = {
+			execute: vi.fn().mockResolvedValue(Result.ok(null)),
+		} as unknown as GetDiceSessionUsecase;
 	});
 
-	it("retourne USER_OR_GUEST_REQUIRED si ni userId ni guestId", async () => {
-		const usecase = new StartDiceGameUsecase(
+	function makeUsecase() {
+		return new StartDiceGameUsecase(
 			sessionRepo,
 			playerRepo,
 			stateRepo,
+			broadcaster,
+			getSession,
 		);
+	}
+
+	it("retourne USER_OR_GUEST_REQUIRED si ni userId ni guestId", async () => {
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: null,
@@ -112,11 +129,7 @@ describe("StartDiceGameUsecase", () => {
 
 	it("retourne SESSION_NOT_FOUND si la session n'existe pas", async () => {
 		vi.mocked(sessionRepo.findById).mockResolvedValue(Result.ok(null));
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",
@@ -130,11 +143,7 @@ describe("StartDiceGameUsecase", () => {
 		vi.mocked(sessionRepo.findById).mockResolvedValue(
 			Result.ok(createSession({ status: "PLAYING" })),
 		);
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",
@@ -151,11 +160,7 @@ describe("StartDiceGameUsecase", () => {
 			Result.ok(createSession()),
 		);
 		vi.mocked(playerRepo.findBySession).mockResolvedValue(Result.ok([]));
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",
@@ -183,11 +188,7 @@ describe("StartDiceGameUsecase", () => {
 			Result.ok(creatorGuest),
 		);
 
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",
@@ -211,12 +212,15 @@ describe("StartDiceGameUsecase", () => {
 			Result.ok(createState()),
 		);
 		vi.mocked(sessionRepo.updateStatus).mockResolvedValue(Result.ok(undefined));
-
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
+		vi.mocked(getSession.execute).mockResolvedValue(
+			Result.ok({
+				session: createSession({ status: "PLAYING" }),
+				players,
+				state: createState(),
+			}),
 		);
+
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",
@@ -240,6 +244,11 @@ describe("StartDiceGameUsecase", () => {
 			"session-1",
 			"PLAYING",
 		);
+		expect(getSession.execute).toHaveBeenCalledWith("session-1");
+		expect(broadcaster.broadcast).toHaveBeenCalledWith(
+			"session-1",
+			expect.objectContaining({ type: "STATE" }),
+		);
 	});
 
 	it("accepte le créateur par guestId", async () => {
@@ -254,11 +263,7 @@ describe("StartDiceGameUsecase", () => {
 		);
 		vi.mocked(sessionRepo.updateStatus).mockResolvedValue(Result.ok(undefined));
 
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: null,
@@ -284,11 +289,7 @@ describe("StartDiceGameUsecase", () => {
 			Result.error(new Error("CREATE_STATE_FAILED")),
 		);
 
-		const usecase = new StartDiceGameUsecase(
-			sessionRepo,
-			playerRepo,
-			stateRepo,
-		);
+		const usecase = makeUsecase();
 		const result = await usecase.execute({
 			sessionId: "session-1",
 			userId: "user-1",

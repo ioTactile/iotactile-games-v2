@@ -17,4 +17,3 @@ describe("generateJoinCode", () => {
 		expect(codes.size).toBeGreaterThan(1);
 	});
 });
-

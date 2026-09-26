@@ -1,5 +1,7 @@
-import type { AccessTokenPayload } from "@/application/command/ports/auth-token.port.ts";
-import type { AuthTokenPort } from "@/application/command/ports/auth-token.port.ts";
+import type {
+	AccessTokenPayload,
+	AuthTokenPort,
+} from "@/application/command/ports/auth-token.port.ts";
 
 declare module "fastify" {
 	interface FastifyRequest {

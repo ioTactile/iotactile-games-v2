@@ -38,4 +38,3 @@ describe("loginRateLimiter", () => {
 		expect(isLoginBlocked(key, now + 1_000)).toBe(false);
 	});
 });
-

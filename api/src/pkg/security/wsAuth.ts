@@ -3,7 +3,9 @@ export function extractAccessTokenFromProtocols(
 ): string | undefined {
 	if (!protocolHeader) return undefined;
 	const raw =
-		typeof protocolHeader === "string" ? protocolHeader : protocolHeader.join(",");
+		typeof protocolHeader === "string"
+			? protocolHeader
+			: protocolHeader.join(",");
 	const parts = raw
 		.split(",")
 		.map((p) => p.trim())
@@ -17,4 +19,3 @@ export function extractAccessTokenFromProtocols(
 
 	return undefined;
 }
-

@@ -3,8 +3,11 @@ import type {
 	DiceSessionPlayerRepository,
 	DiceSessionRepository,
 } from "@/domain/dice/dice.repository.ts";
-import type { DiceSessionType } from "@/domain/dice/dice.type.ts";
-import { SLOT_ORDER } from "@/domain/dice/dice.type.ts";
+import {
+	DiceSessionStatus,
+	type DiceSessionType,
+	SLOT_ORDER,
+} from "@/domain/dice/dice.type.ts";
 
 export interface JoinDiceSessionInput {
 	sessionId: string;
@@ -46,14 +49,14 @@ export class JoinDiceSessionUsecase {
 		if (!session) {
 			return Result.error(new Error("SESSION_NOT_FOUND"));
 		}
-		if (session.status !== "WAITING") {
+		if (session.status !== DiceSessionStatus.WAITING) {
 			return Result.error(new Error("SESSION_ALREADY_STARTED_OR_FINISHED"));
 		}
 
 		const playersResult = await this.playerRepo.findBySession(input.sessionId);
 		if (!playersResult.ok) return playersResult;
 		const players = playersResult.value;
-		if (players.length >= 4) {
+		if (players.length >= SLOT_ORDER.length) {
 			return Result.error(new Error("SESSION_FULL"));
 		}
 

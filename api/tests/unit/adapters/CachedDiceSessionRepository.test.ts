@@ -21,6 +21,7 @@ describe("CachedDiceSessionRepository", () => {
 	let redis: {
 		get: ReturnType<typeof vi.fn>;
 		set: ReturnType<typeof vi.fn>;
+		del: ReturnType<typeof vi.fn>;
 	};
 
 	beforeEach(() => {
@@ -35,6 +36,7 @@ describe("CachedDiceSessionRepository", () => {
 		redis = {
 			get: vi.fn(),
 			set: vi.fn(),
+			del: vi.fn(),
 		};
 	});
 
@@ -147,5 +149,85 @@ describe("CachedDiceSessionRepository", () => {
 		expect(innerRepo.findByJoinCode).toHaveBeenCalledTimes(1);
 		expect(innerRepo.updateStatus).toHaveBeenCalledTimes(1);
 		expect(innerRepo.delete).toHaveBeenCalledTimes(1);
+		expect(redis.del).toHaveBeenCalledTimes(3);
+	});
+
+	it("invalide le cache après create / updateStatus / delete", async () => {
+		const { CachedDiceSessionRepository } = await import(
+			"@/adapters/secondary/persistence/CachedDiceSessionRepository.ts"
+		);
+		const repo = new CachedDiceSessionRepository({
+			inner: innerRepo,
+			redis: redis as unknown as never,
+			publicWaitingTtlSeconds: 5,
+		});
+		const session = createSession();
+		vi.mocked(innerRepo.create).mockResolvedValue(Result.ok(session));
+		vi.mocked(innerRepo.updateStatus).mockResolvedValue(Result.ok(undefined));
+		vi.mocked(innerRepo.delete).mockResolvedValue(Result.ok(undefined));
+
+		await repo.create({
+			name: "Public",
+			isPublic: true,
+			createdBy: { userId: "u1", guestId: null, displayName: "A" },
+		});
+		await repo.updateStatus("session-1", "PLAYING");
+		await repo.delete("session-1");
+
+		expect(redis.del).toHaveBeenCalledTimes(3);
+		expect(redis.del).toHaveBeenCalledWith("dice:sessions:public:waiting");
+	});
+
+	it("délègue sans Redis quand redis est null", async () => {
+		const { CachedDiceSessionRepository } = await import(
+			"@/adapters/secondary/persistence/CachedDiceSessionRepository.ts"
+		);
+		const sessions = [createSession()];
+		vi.mocked(innerRepo.findPublicWaiting).mockResolvedValue(
+			Result.ok(sessions),
+		);
+		const repo = new CachedDiceSessionRepository({
+			inner: innerRepo,
+			redis: null,
+			publicWaitingTtlSeconds: 5,
+		});
+
+		const result = await repo.findPublicWaiting();
+		expect(result.ok).toBe(true);
+		expect(innerRepo.findPublicWaiting).toHaveBeenCalledTimes(1);
+	});
+
+	it("reconstitue les Date depuis le JSON Redis", async () => {
+		const { CachedDiceSessionRepository } = await import(
+			"@/adapters/secondary/persistence/CachedDiceSessionRepository.ts"
+		);
+		const createdAt = "2026-01-15T10:00:00.000Z";
+		const updatedAt = "2026-01-15T11:00:00.000Z";
+		redis.get.mockResolvedValue(
+			JSON.stringify([
+				{
+					id: "s1",
+					name: "Partie",
+					joinCode: "ABC123",
+					isPublic: true,
+					status: "WAITING",
+					createdAt,
+					updatedAt,
+				},
+			]),
+		);
+
+		const repo = new CachedDiceSessionRepository({
+			inner: innerRepo,
+			redis: redis as unknown as never,
+			publicWaitingTtlSeconds: 5,
+		});
+		const result = await repo.findPublicWaiting();
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.value[0].createdAt).toBeInstanceOf(Date);
+			expect(result.value[0].updatedAt).toBeInstanceOf(Date);
+			expect(result.value[0].createdAt.toISOString()).toBe(createdAt);
+		}
 	});
 });

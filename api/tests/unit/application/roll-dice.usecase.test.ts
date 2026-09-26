@@ -94,7 +94,7 @@ describe("RollDiceUsecase", () => {
 			findBySession: vi.fn(),
 			updateState: vi.fn(),
 		};
-		broadcaster = { broadcast: vi.fn() };
+		broadcaster = { register: vi.fn(() => () => {}), broadcast: vi.fn() };
 	});
 
 	it("retourne USER_OR_GUEST_REQUIRED si ni userId ni guestId", async () => {
@@ -318,5 +318,56 @@ describe("RollDiceUsecase", () => {
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.error.message).toBe("UPDATE_FAILED");
+	});
+
+	it("préserve les dés verrouillés lors du roll", async () => {
+		vi.spyOn(Math, "random").mockReturnValue(0.99); // face 6
+		const session = createSession();
+		const state = createState({
+			triesLeft: 2,
+			dices: [
+				{ face: 2, locked: true },
+				{ face: 3, locked: false },
+				{ face: 4, locked: true },
+				{ face: 5, locked: false },
+				{ face: 1, locked: false },
+			],
+		});
+		vi.mocked(sessionRepo.findById).mockResolvedValue(Result.ok(session));
+		vi.mocked(playerRepo.findBySessionAndUserOrGuest).mockResolvedValue(
+			Result.ok(createPlayer()),
+		);
+		vi.mocked(playerRepo.findBySession).mockResolvedValue(
+			Result.ok([createPlayer()]),
+		);
+		vi.mocked(stateRepo.findBySession).mockResolvedValue(Result.ok(state));
+		vi.mocked(stateRepo.updateState).mockResolvedValue(Result.ok(state));
+
+		const usecase = new RollDiceUsecase(
+			sessionRepo,
+			playerRepo,
+			stateRepo,
+			broadcaster,
+		);
+		const result = await usecase.execute({
+			sessionId: "session-1",
+			userId: "user-1",
+			guestId: null,
+		});
+
+		expect(result.ok).toBe(true);
+		expect(stateRepo.updateState).toHaveBeenCalledWith(
+			"session-1",
+			expect.objectContaining({
+				dices: [
+					{ face: 2, locked: true },
+					{ face: 6, locked: false },
+					{ face: 4, locked: true },
+					{ face: 6, locked: false },
+					{ face: 6, locked: false },
+				],
+			}),
+		);
+		vi.restoreAllMocks();
 	});
 });

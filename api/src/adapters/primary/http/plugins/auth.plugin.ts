@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import { JwtAuthTokenAdapter } from "@/adapters/secondary/security/JwtAuthTokenAdapter.ts";
 import type { AccessTokenPayload } from "@/application/command/ports/auth-token.port.ts";
+import { Role } from "@/domain/user/user.type.ts";
 import { config } from "@/pkg/config/index.ts";
 
 export async function authPlugin(server: FastifyInstance) {
@@ -37,7 +38,7 @@ export async function authPlugin(server: FastifyInstance) {
 			if (!request.user) {
 				return reply.status(401).send({ error: "Authentification requise." });
 			}
-			if ((request.user as AccessTokenPayload).role !== "ADMIN") {
+			if ((request.user as AccessTokenPayload).role !== Role.ADMIN) {
 				return reply
 					.status(403)
 					.send({ error: "Accès réservé aux administrateurs." });

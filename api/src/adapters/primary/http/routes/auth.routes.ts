@@ -69,9 +69,9 @@ export async function registerAuthRoutes(server: FastifyInstance) {
 
 		const key = buildLoginKey(request.ip, parsed.data.email);
 		if (isLoginBlocked(key)) {
-			return reply
-				.status(429)
-				.send({ error: "Trop de tentatives de connexion, réessayez plus tard." });
+			return reply.status(429).send({
+				error: "Trop de tentatives de connexion, réessayez plus tard.",
+			});
 		}
 
 		const result = await loginUsecase.execute(

@@ -3,6 +3,7 @@ import type {
 	DiceSessionPlayerRepository,
 	DiceSessionRepository,
 } from "@/domain/dice/dice.repository.ts";
+import { DiceSessionStatus } from "@/domain/dice/dice.type.ts";
 
 export interface LeaveDiceSessionInput {
 	sessionId: string;
@@ -33,7 +34,7 @@ export class LeaveDiceSessionUsecase {
 		if (!session) {
 			return Result.error(new Error("SESSION_NOT_FOUND"));
 		}
-		if (session.status !== "WAITING") {
+		if (session.status !== DiceSessionStatus.WAITING) {
 			return Result.error(new Error("CANNOT_LEAVE_STARTED_GAME"));
 		}
 
